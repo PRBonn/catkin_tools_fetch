@@ -1,19 +1,11 @@
-# Copyright 2014 Open Source Robotics Foundation, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""Contains main for deps verb.
+
+Attributes:
+    log (logging.Log): logger
+"""
 
 import sys
-import catkin_tools
+import logging
 from os import path
 
 try:
@@ -30,9 +22,21 @@ from catkin_tools.context import Context
 
 from .fetcher.dependency_parser import Parser
 from .fetcher.downloader import Downloader
+from .fetcher.tools import Tools
+
+logging.basicConfig()
+log = logging.getLogger('deps')
 
 
 def prepare_arguments(parser):
+    """Parse arguments that belong to this verb.
+
+    Args:
+        parser (argparser): Argument parser
+
+    Returns:
+        argparser: Parser that knows about our flags.
+    """
     parser.description = """\
 Download dependencies for one or more packages in a catkin workspace. This
 reads dependencies from package.xml file of each of the packages in the
@@ -42,13 +46,35 @@ choice.\
     # Workspace / profile args
     add_context_args(parser)
 
-    # What packages to build
-    pkg_group = parser.add_argument_group('Packages',
-                                          'Control which packages get built.')
-    add = pkg_group.add_argument
-    add('packages', metavar='PKGNAME', nargs='*',
-        help='Packages for which the dependencies will be downloaded. '
-             'If no packages are given, all dependencies are downloaded.')
+    # Sub-parsers
+    subparsers = parser.add_subparsers(dest='subcommand')
+    parser_fetch = subparsers.add_parser(
+        'fetch', help='Fetch dependencies.')
+    parser_update = subparsers.add_parser(
+        'update', help='Update dependencies.')
+
+    # add packages argument to all groups that need it
+    packages_help_msg = """
+        Packages for which the dependencies are analyzed.
+        If no packages are given, all packages are processed."""
+    fetch_group = parser_fetch.add_argument_group('Packages',
+                                                  'Control for which packages we fetch dependencies.')
+    update_group = parser_update.add_argument_group('Packages',
+                                                    'Control for which packages we update dependencies.')
+
+    pkg_groups = [fetch_group, update_group]
+    for pkg_group in pkg_groups:
+        pkg_group.add_argument('packages',
+                               metavar='PKGNAME',
+                               nargs='*',
+                               help=packages_help_msg)
+
+    # add config flags to all groups that need it
+    parsers_list = [parser, parser_fetch, parser_update]
+    for p in parsers_list:
+        config_group = p.add_argument_group('Config')
+        config_group.add_argument('--default_url', default="",
+                                  help='Where to look for packages by default.')
 
     # Behavior
     behavior_group = parser.add_argument_group(
@@ -61,29 +87,76 @@ choice.\
 
 
 def main(opts):
+    """Main function for deps verb.
+
+    Args:
+        opts (dict): Options populated by an arg parser.
+
+    Returns:
+        int: Return code
+    """
     # Load the context
+    if opts.verbose:
+        log.setLevel(logging.getLevelName("DEBUG"))
+        log.debug(" Enabling DEBUG output.")
+    else:
+        log.setLevel(logging.getLevelName("INFO"))
+
     context = Context.load(opts.workspace, opts.profile, opts, append=True)
-    workspace_packages = find_packages(context.source_space_abs,
-                                       exclude_subspaces=True, warnings=[])
-    # TODO: get rid of this hardcoded path, add this as parameter or even
-    # setting. Should be possible to store this per workspace.
-    default_url = "git@gitlab.ipb.uni-bonn.de:ipb-tools/{package}.git"
+    default_url = Tools.prepare_default_url(opts.default_url)
     if not opts.workspace:
-        print("Please define workspace!")
+        log.critical(" Workspace undefined! Abort!")
         return 1
+    if opts.subcommand == 'fetch':
+        return fetch(packages=opts.packages,
+                     workspace=opts.workspace,
+                     context=context,
+                     default_url=default_url)
+
+
+def fetch(packages, workspace, context, default_url):
+    """Detch dependencies of a package.
+
+    Args:
+        packages (list): A list of packages provided by the user.
+        workspace (str): Path to a workspace (without src/ in the end).
+        context (Context): Current context. Needed to find current packages.
+        default_url (str): A default url with a {package} placeholder in it.
+
+    Returns:
+        int: Return code. 0 if success. Git error code otherwise.
+    """
     fetch_all = False
-    if len(opts.packages) == 0:
+    if len(packages) == 0:
         fetch_all = True
 
-    available_pkgs = [pkg.name for _, pkg in workspace_packages.items()]
-    if len(available_pkgs) == 0:
-        print("There are no packages in the workspace.")
+    ws_path = path.join(workspace, 'src')
+    ignore_pkgs = Tools.list_all_ros_pkgs()
 
-    for package_path, package in workspace_packages.items():
-        if fetch_all or (package.name in opts.packages):
-            parser = Parser(default_url, package.name)
-            ws_path = path.join(opts.workspace, 'src')
-            package_folder = path.join(ws_path, package_path)
-            downloader = Downloader(ws_path, available_pkgs)
-            dep_dict = parser.get_dependencies(package_folder)
-            downloader.download_dependencies(dep_dict)
+    already_fetched = set()
+
+    global_error_code = Downloader.NO_ERROR
+
+    while(True):
+        deps_to_fetch = {}
+        workspace_packages = find_packages(context.source_space_abs,
+                                           exclude_subspaces=True, warnings=[])
+        available_pkgs = [pkg.name for _, pkg in workspace_packages.items()]
+        initial_cloned_pkgs = len(already_fetched)
+        for package_path, package in workspace_packages.items():
+            if package.name in already_fetched:
+                continue
+            if fetch_all or (package.name in packages):
+                parser = Parser(default_url, package.name)
+                package_folder = path.join(ws_path, package_path)
+                deps_to_fetch.update(parser.get_dependencies(package_folder))
+                already_fetched.add(package.name)
+        downloader = Downloader(ws_path, available_pkgs, ignore_pkgs)
+        error_code = downloader.download_dependencies(deps_to_fetch)
+        if len(already_fetched) == initial_cloned_pkgs:
+            log.info(" No new dependencies. Done.")
+            break
+        if error_code != 0:
+            global_error_code = error_code
+        log.info(" New packages available. Check their dependencies now.")
+    return global_error_code

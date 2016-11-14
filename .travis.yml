@@ -1,0 +1,45 @@
+# Travis auto-virtualenv isn't supported on OS X
+language: generic
+matrix:
+  include:
+    - dist: precise
+      python: 2.7
+      language: python
+      python: "2.7"
+      os: linux
+      env: PYTHON=/usr/bin/python2.7 CATKIN_VERSION=groovy-devel
+    - dist: precise
+      python: 3.4
+      language: python
+      python: "3.4"
+      os: linux
+      env: PYTHON=/usr/bin/python3.4 CATKIN_VERSION=groovy-devel
+    - dist: trusty
+      python: 2.7
+      language: python
+      python: "2.7"
+      os: linux
+      env: PYTHON=/usr/bin/python2.7 CATKIN_VERSION=indigo-devel
+    - dist: trusty
+      python: 3.4
+      language: python
+      python: "3.4"
+      os: linux
+      env: PYTHON=/usr/bin/python3.4 CATKIN_VERSION=indigo-devel
+    - os: osx
+      python: 2
+      env: PYTHON=/usr/bin/python CATKIN_VERSION=indigo-devel
+    - os: osx
+      python: 3
+      env: PYTHON=/usr/local/bin/python3 CATKIN_VERSION=indigo-devel
+before_install:
+  # Install catkin_tools dependencies
+  - pip install setuptools argparse catkin-pkg distribute PyYAML psutil trollius osrf_pycommon pyenchant sphinxcontrib-spelling
+install:
+  # Install catkin_tools
+  - python setup.py develop
+script:
+  # Run catkin_tools test harness
+  - python setup.py nosetests -s
+notifications:
+  email: false

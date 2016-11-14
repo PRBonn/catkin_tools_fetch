@@ -50,7 +50,7 @@ the packages found inside the catkin workspace.
 """,
     entry_points={
         'catkin_tools.commands.catkin.verbs': [
-            'fetch = catkin_fetch:description',
+            'deps = catkin_fetch:description',
         ],
     },
 )
