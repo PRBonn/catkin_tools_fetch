@@ -8,7 +8,9 @@ import logging
 from os import path
 from xml.dom import minidom
 
-log = logging.getLogger('deps')
+from .tools import Tools
+
+log = logging.getLogger('fetch')
 
 
 class Parser(object):
@@ -69,7 +71,9 @@ class Parser(object):
         all_deps = []
         for tag in Parser.TAGS:
             all_deps += Parser.__node_to_list(xmldoc, tag)
-        log.info(" [%s]: Found %s dependencies.", self.pkg_name, len(all_deps))
+        log.info("  %-21s: Found %s dependencies.",
+                 Tools.decorate(self.pkg_name),
+                 len(all_deps))
         deps_with_urls = self.__init_dep_dict(all_deps)
         return Parser.__specify_explicit_urls(xmldoc, deps_with_urls)
 

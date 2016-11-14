@@ -26,12 +26,6 @@ matrix:
       python: "3.4"
       os: linux
       env: PYTHON=/usr/bin/python3.4 CATKIN_VERSION=indigo-devel
-    - os: osx
-      python: 2
-      env: PYTHON=/usr/bin/python CATKIN_VERSION=indigo-devel
-    - os: osx
-      python: 3
-      env: PYTHON=/usr/local/bin/python3 CATKIN_VERSION=indigo-devel
 before_install:
   # Install catkin_tools dependencies
   - pip install setuptools argparse catkin-pkg catkin_tools trollius

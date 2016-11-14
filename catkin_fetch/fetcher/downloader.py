@@ -11,7 +11,7 @@ from subprocess import PIPE
 
 from .tools import Tools
 
-log = logging.getLogger('deps')
+log = logging.getLogger('fetch')
 
 
 class Downloader(object):
@@ -76,7 +76,7 @@ class Downloader(object):
         error_code = Downloader.NO_ERROR
         for name, url in checked_deps.items():
             if name in self.available_pkgs:
-                log.info(" %-21s: %s",
+                log.info("  %-21s: %s",
                          Tools.decorate(name),
                          Downloader.EXISTS_TAG)
                 continue
@@ -94,16 +94,15 @@ class Downloader(object):
                 out_str = e.output.decode("utf8")
                 log.debug(" Clone output: %s", out_str)
                 if "already exists" in out_str:
-                    log.info(" %-21s: %s",
+                    log.info("  %-21s: %s",
                              Tools.decorate(name),
                              Downloader.EXISTS_TAG)
                 else:
-                    log.error(" %-20s: %s Git error code: %s",
+                    log.error("  %-21s: %s Git error code: %s",
                               Tools.decorate(name),
                               Downloader.ERROR_TAG,
                               e.returncode)
                     error_code = e.returncode
-        log.info(" Dependencies cloned.\n")
         return error_code
 
     def __check_dependencies(self, dep_dict):
@@ -122,17 +121,16 @@ class Downloader(object):
         log.info(" Checking merged dependencies:")
         for name, url in dep_dict.items():
             if name in self.ignore_pkgs:
-                log.info("  %-20s: %s",
+                log.info("  %-21s: %s",
                          Tools.decorate(name),
                          Downloader.IGNORE_TAG)
             elif Downloader.repository_exists(url):
-                log.info("  %-20s: %s", Tools.decorate(name), url)
+                log.info("  %-21s: %s", Tools.decorate(name), url)
                 checked_deps[name] = url
             else:
-                log.info("  %-20s: %s",
+                log.info("  %-21s: %s",
                          Tools.decorate(name),
                          Downloader.NOT_FOUND_TAG)
-        log.info(" Check completed.")
         return checked_deps
 
     @staticmethod

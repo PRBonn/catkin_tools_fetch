@@ -17,7 +17,7 @@ from .cli import prepare_arguments
 
 # This describes this command to the loader
 description = dict(
-    verb='deps',
+    verb='fetch',
     description='Fetch dependencies of packages in the workspace',
     main=main,
     prepare_arguments=prepare_arguments,

@@ -6,7 +6,7 @@ Attributes:
 import subprocess
 import logging
 
-log = logging.getLogger('deps')
+log = logging.getLogger('fetch')
 
 
 class Tools(object):

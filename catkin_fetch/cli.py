@@ -25,7 +25,7 @@ from .fetcher.downloader import Downloader
 from .fetcher.tools import Tools
 
 logging.basicConfig()
-log = logging.getLogger('deps')
+log = logging.getLogger('fetch')
 
 
 def prepare_arguments(parser):
@@ -41,41 +41,28 @@ def prepare_arguments(parser):
         a catkin workspace. This reads dependencies from package.xml file of
         each of the packages in the workspace and tries to download their
         sources from version control system of choice."""
-    # Workspace / profile args
     add_context_args(parser)
 
-    # Sub-parsers
-    subparsers = parser.add_subparsers(dest='subcommand')
-    parser_fetch = subparsers.add_parser(
-        'fetch', help='Fetch dependencies.')
-    parser_update = subparsers.add_parser(
-        'update', help='Update dependencies.')
-
-    # add packages argument to all groups that need it
     packages_help_msg = """
         Packages for which the dependencies are analyzed.
         If no packages are given, all packages are processed."""
-    fetch_group = parser_fetch.add_argument_group(
+    fetch_group = parser.add_argument_group(
         'Packages',
         'Control for which packages we fetch dependencies.')
-    update_group = parser_update.add_argument_group(
-        'Packages',
-        'Control for which packages we update dependencies.')
 
-    pkg_groups = [fetch_group, update_group]
-    for pkg_group in pkg_groups:
-        pkg_group.add_argument('packages',
-                               metavar='PKGNAME',
-                               nargs='*',
-                               help=packages_help_msg)
+    fetch_group.add_argument('packages',
+                             metavar='PKGNAME',
+                             nargs='*',
+                             help=packages_help_msg)
 
     # add config flags to all groups that need it
-    parsers_list = [parser, parser_fetch, parser_update]
-    for p in parsers_list:
-        config_group = p.add_argument_group('Config')
-        config_group.add_argument(
-            '--default_url', default="{package}",
-            help='Where to look for packages by default.')
+    config_group = parser.add_argument_group('Config')
+    config_group.add_argument(
+        '--default_url', default="{package}",
+        help='Where to look for packages by default.')
+    config_group.add_argument(
+        '--update', '-u', action='store_true', default=False,
+        help='Update the dependencies to latest version.')
 
     # Behavior
     behavior_group = parser.add_argument_group(
@@ -88,7 +75,7 @@ def prepare_arguments(parser):
 
 
 def main(opts):
-    """Main function for deps verb.
+    """Main function for fetch verb.
 
     Args:
         opts (dict): Options populated by an arg parser.
@@ -105,17 +92,18 @@ def main(opts):
 
     context = Context.load(opts.workspace, opts.profile, opts, append=True)
     default_url = Tools.prepare_default_url(opts.default_url)
+
     if not opts.workspace:
         log.critical(" Workspace undefined! Abort!")
         return 1
-    if opts.subcommand == 'fetch':
+    if opts.update:
+        log.error(" Sorry, 'update' not implemented yet, but is planned.")
+        return 1
+    if opts.verb == 'fetch':
         return fetch(packages=opts.packages,
                      workspace=opts.workspace,
                      context=context,
                      default_url=default_url)
-    elif opts.subcommand == 'update':
-        log.error("Update not implemented yet, but is planned.")
-        return 1
 
 
 def fetch(packages, workspace, context, default_url):
@@ -143,6 +131,7 @@ def fetch(packages, workspace, context, default_url):
 
     # loop until there are still any new dependencies left to download
     while(True):
+        log.info(" Searching for dependencies.")
         deps_to_fetch = {}
         workspace_packages = find_packages(
             context.source_space_abs,
@@ -164,5 +153,5 @@ def fetch(packages, workspace, context, default_url):
             break
         if error_code != 0:
             global_error_code = error_code
-        log.info(" New packages available. Check their dependencies now.")
+        log.info(" New packages available. Process their dependencies now.")
     return global_error_code

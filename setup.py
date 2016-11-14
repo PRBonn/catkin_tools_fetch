@@ -73,7 +73,7 @@ the packages found inside the catkin workspace.
     test_suite='tests',
     entry_points={
         'catkin_tools.commands.catkin.verbs': [
-            'deps = catkin_fetch:description',
+            'fetch = catkin_fetch:description',
         ],
     },
     cmdclass={'install': PermissiveInstall},
