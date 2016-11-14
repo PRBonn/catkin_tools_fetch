@@ -29,6 +29,10 @@ class Tools(object):
             str: Url with {package} tag placed inside of it.
         """
         package_tag = '{package}'
+        if len(default_url) == 0:
+            return default_url
+        if not default_url.endswith('/'):
+            default_url += '/'
         if default_url.startswith('git'):
             return default_url + package_tag + '.git'
         if default_url.startswith('http'):

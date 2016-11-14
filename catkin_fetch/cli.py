@@ -113,6 +113,9 @@ def main(opts):
                      workspace=opts.workspace,
                      context=context,
                      default_url=default_url)
+    elif opts.subcommand == 'update':
+        log.error("Update not implemented yet, but is planned.")
+        return 1
 
 
 def fetch(packages, workspace, context, default_url):
