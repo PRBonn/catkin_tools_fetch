@@ -1,6 +1,7 @@
 # A "fetch" verb for catkin_tools
 
-[![Build Status](https://travis-ci.org/niosus/catkin_tools_fetch.svg?branch=master)](https://travis-ci.org/niosus/catkin_tools_fetch)
+[![Build Status][travis-img]][travis-link]
+[![Codacy Badge][codacy-img]][codacy-link]
 
 Defines a new verb `fetch` for
 [catkin_tools](https://github.com/catkin/catkin_tools). This verb is
@@ -43,3 +44,9 @@ file under `<export>` tag. For example:
 
 Here `PACKAGE_NAME` is the name of your package and `PACKAGE_URL` is the full
 url to your package in git.
+
+[codacy-img]: https://api.codacy.com/project/badge/Grade/9c050cd8852046ae863c940b8409f9ea
+[codacy-link]: https://www.codacy.com/app/zabugr/catkin_tools_fetch?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=niosus/catkin_tools_fetch&amp;utm_campaign=Badge_Grade
+
+[travis-img]: https://travis-ci.org/niosus/catkin_tools_fetch.svg?branch=master
+[travis-link]: https://travis-ci.org/niosus/catkin_tools_fetch
