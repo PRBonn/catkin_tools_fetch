@@ -34,7 +34,7 @@ matrix:
       env: PYTHON=/usr/local/bin/python3 CATKIN_VERSION=indigo-devel
 before_install:
   # Install catkin_tools dependencies
-  - pip install setuptools argparse catkin-pkg distribute PyYAML psutil trollius osrf_pycommon pyenchant sphinxcontrib-spelling
+  - pip install setuptools argparse catkin-pkg catkin_tools
 install:
   # Install catkin_tools
   - python setup.py develop
