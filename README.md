@@ -40,3 +40,6 @@ file under `<export>` tag. For example:
     <git_url target="PACKAGE_NAME" url="PACKAGE_URL" />
 </export>
 ```
+
+Here `PACKAGE_NAME` is the name of your package and `PACKAGE_URL` is the full
+url to your package in git.
