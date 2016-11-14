@@ -34,7 +34,7 @@ matrix:
       env: PYTHON=/usr/local/bin/python3 CATKIN_VERSION=indigo-devel
 before_install:
   # Install catkin_tools dependencies
-  - pip install setuptools argparse catkin-pkg catkin_tools
+  - pip install setuptools argparse catkin-pkg catkin_tools trollius
 install:
   # Install catkin_tools
   - python setup.py develop

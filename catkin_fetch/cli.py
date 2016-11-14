@@ -37,12 +37,10 @@ def prepare_arguments(parser):
     Returns:
         argparser: Parser that knows about our flags.
     """
-    parser.description = """\
-Download dependencies for one or more packages in a catkin workspace. This
-reads dependencies from package.xml file of each of the packages in the
-workspace and tries to download their sources from version control system of
-choice.\
-"""
+    parser.description = """ Download dependencies for one or more packages in
+        a catkin workspace. This reads dependencies from package.xml file of
+        each of the packages in the workspace and tries to download their
+        sources from version control system of choice."""
     # Workspace / profile args
     add_context_args(parser)
 
@@ -57,10 +55,12 @@ choice.\
     packages_help_msg = """
         Packages for which the dependencies are analyzed.
         If no packages are given, all packages are processed."""
-    fetch_group = parser_fetch.add_argument_group('Packages',
-                                                  'Control for which packages we fetch dependencies.')
-    update_group = parser_update.add_argument_group('Packages',
-                                                    'Control for which packages we update dependencies.')
+    fetch_group = parser_fetch.add_argument_group(
+        'Packages',
+        'Control for which packages we fetch dependencies.')
+    update_group = parser_update.add_argument_group(
+        'Packages',
+        'Control for which packages we update dependencies.')
 
     pkg_groups = [fetch_group, update_group]
     for pkg_group in pkg_groups:
@@ -73,8 +73,9 @@ choice.\
     parsers_list = [parser, parser_fetch, parser_update]
     for p in parsers_list:
         config_group = p.add_argument_group('Config')
-        config_group.add_argument('--default_url', default="",
-                                  help='Where to look for packages by default.')
+        config_group.add_argument(
+            '--default_url', default="{package}",
+            help='Where to look for packages by default.')
 
     # Behavior
     behavior_group = parser.add_argument_group(
@@ -137,10 +138,12 @@ def fetch(packages, workspace, context, default_url):
 
     global_error_code = Downloader.NO_ERROR
 
+    # loop until there are still any new dependencies left to download
     while(True):
         deps_to_fetch = {}
-        workspace_packages = find_packages(context.source_space_abs,
-                                           exclude_subspaces=True, warnings=[])
+        workspace_packages = find_packages(
+            context.source_space_abs,
+            exclude_subspaces=True, warnings=[])
         available_pkgs = [pkg.name for _, pkg in workspace_packages.items()]
         initial_cloned_pkgs = len(already_fetched)
         for package_path, package in workspace_packages.items():

@@ -16,5 +16,4 @@ class TestParser(unittest.TestCase):
             Parser("blah", "name")
             self.fail()
         except RuntimeError as e:
-            expect = '`download_mask` must contain a "{package}" placeholder.'
-            self.assertEqual(expect, e.message)
+            self.assertTrue(isinstance(e, RuntimeError))
