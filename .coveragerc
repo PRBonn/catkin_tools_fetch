@@ -1,0 +1,10 @@
+# .coveragerc to control coverage.py
+[run]
+include =
+    # coverage for local files only
+    catkin_fetch/*
+
+[html]
+directory = coverage_html_report
+
+

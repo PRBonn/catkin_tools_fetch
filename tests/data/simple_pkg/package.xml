@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>simple_pkg</name>
+  <version>1.0.0</version>
+  <description>simple package</description>
+
+  <maintainer email="igor.bogoslavskyi@uni-bonn.de">igor</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>dep_1</build_depend>
+  <build_depend>dep_2</build_depend>
+  <build_depend>dep_3</build_depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <git_url target="dep_1" url="http_link" />
+    <git_url target="dep_2" url="git_link" />
+  </export>
+</package>

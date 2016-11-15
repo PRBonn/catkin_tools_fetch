@@ -22,3 +22,8 @@ class TestTools(unittest.TestCase):
 
     def test_decorate(self):
         self.assertEqual('[blah]', Tools.decorate('blah'))
+
+    def test_default_ros_pkgs(self):
+        pkgs = Tools.list_all_ros_pkgs()
+        diff = pkgs.symmetric_difference(Tools.default_ros_packages)
+        self.assertTrue(len(diff) == 0)

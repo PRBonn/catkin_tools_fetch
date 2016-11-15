@@ -37,7 +37,7 @@ class Parser(object):
         """
         super(Parser, self).__init__()
         if '{package}' not in download_mask:
-            raise RuntimeError(
+            raise ValueError(
                 '`download_mask` must contain a "{package}" placeholder.')
         self.__download_mask = download_mask
         self.pkg_name = pkg_name

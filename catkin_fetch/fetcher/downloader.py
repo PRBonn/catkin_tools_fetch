@@ -40,10 +40,12 @@ class Downloader(object):
 
         Args:
             ws_path (str): Workspace path. This is where packages live.
-            available_pkgs (str[]): dict of available packages in workspace.
-            ignore_pkgs (set): a set of packages to ignore (mostly ROS ones).
+            available_pkgs (iterable): dict of available packages in workspace.
+            ignore_pkgs (iterable): a set of packages to ignore (e.g. ROS ones).
         """
         super(Downloader, self).__init__()
+        if not path.exists(ws_path):
+            raise ValueError("workspace '{}' does not exist".format(ws_path))
         self.ws_path = ws_path
         self.available_pkgs = available_pkgs
         self.ignore_pkgs = ignore_pkgs
