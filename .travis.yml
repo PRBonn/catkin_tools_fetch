@@ -28,7 +28,8 @@ matrix:
       env: PYTHON=/usr/bin/python3.4 CATKIN_VERSION=indigo-devel
 before_install:
   # Install catkin_tools dependencies
-  - pip install setuptools argparse catkin-pkg catkin_tools trollius codacy-coverage
+  - pip install setuptools argparse catkin-pkg catkin_tools trollius
+  - pip install setuptools flake8 codacy-coverage
 install:
   # Install catkin_tools
   - python setup.py develop
