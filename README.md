@@ -6,7 +6,7 @@
 
 Defines a new verb `fetch` for
 [catkin_tools](https://github.com/catkin/catkin_tools). This verb is
-responsible to download external dependencies of the projects in a `catkin`
+responsible for downloading external dependencies of the projects in a `catkin`
 workspace. For now only git is supported. The tool is under heavy development.
 
 ## How to install ##
