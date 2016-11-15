@@ -7,29 +7,29 @@ matrix:
       language: python
       python: "2.7"
       os: linux
-      env: PYTHON=/usr/bin/python2.7 CATKIN_VERSION=groovy-devel
+      env: PYTHON=/usr/bin/python2.7
     - dist: precise
       python: 3.4
       language: python
       python: "3.4"
       os: linux
-      env: PYTHON=/usr/bin/python3.4 CATKIN_VERSION=groovy-devel
+      env: PYTHON=/usr/bin/python3.4
     - dist: trusty
       python: 2.7
       language: python
       python: "2.7"
       os: linux
-      env: PYTHON=/usr/bin/python2.7 CATKIN_VERSION=indigo-devel
+      env: PYTHON=/usr/bin/python2.7
     - dist: trusty
       python: 3.4
       language: python
       python: "3.4"
       os: linux
-      env: PYTHON=/usr/bin/python3.4 CATKIN_VERSION=indigo-devel
+      env: PYTHON=/usr/bin/python3.4
 before_install:
   # Install catkin_tools dependencies
   - pip install setuptools argparse catkin-pkg catkin_tools trollius
-  - pip install setuptools flake8 codacy-coverage
+  - pip install flake8 coverage codacy-coverage
 install:
   # Install catkin_tools
   - python setup.py develop
