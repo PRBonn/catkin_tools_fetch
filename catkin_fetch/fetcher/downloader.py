@@ -59,6 +59,8 @@ class Downloader(object):
         Returns:
             int: Return code. 0 if all fine. Git error code otherwise.
         """
+        if not isinstance(dep_dict, dict):
+            raise ValueError("expected a dictionary with dependencies.")
         checked_deps = self.__check_dependencies(dep_dict)
         return self.__clone_dependencies(checked_deps)
 
