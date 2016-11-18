@@ -12,15 +12,9 @@ workspace. For now only git is supported. The tool is under heavy development.
 
 ## How to install ##
 This package installs a new verb. You need to have `catkin_tools` installed.
-Currently the easiest way to install this verb is:
-
+Currently the easiest way to install this verb is from `PyPI`:
 ```
-pip install -U https://github.com/niosus/catkin_tools_fetch/archive/master.zip
-```
-if this complaints, run a command with `sudo`:
-
-```
-sudo pip install https://github.com/niosus/catkin_tools_fetch/archive/master.zip
+[sudo] pip install catkin_tools_fetch
 ```
 
 ## How to use ##
