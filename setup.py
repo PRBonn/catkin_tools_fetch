@@ -35,7 +35,7 @@ class PermissiveInstall(install):
                 log.info("changing permissions of %s to %o" % (file, mode))
                 os.chmod(file, mode)
 
-version_str = '0.0.1'
+version_str = '0.0.2'
 github_url = 'https://github.com/niosus/catkin_tools_fetch'
 
 setup(
