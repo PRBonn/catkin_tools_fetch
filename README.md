@@ -1,6 +1,6 @@
 # A "fetch" verb for catkin_tools
 
-[![PyPI][pypi-img]][repo-link]
+[![PyPI][pypi-img]][pypi-link]
 [![Build Status][travis-img]][travis-link]
 [![Codacy Badge][codacy-img]][codacy-link]
 [![Codacy coverage][codacy-coverage-img]][codacy-coverage-link]
@@ -56,5 +56,5 @@ url to your package in git.
 [travis-link]: https://travis-ci.org/niosus/catkin_tools_fetch
 
 [pypi-img]: https://img.shields.io/pypi/v/catkin_tools_fetch.svg
+[pypi-link]: https://pypi.python.org/pypi/catkin_tools_fetch
 
-[repo-link]: https://github.com/niosus/catkin_tools_fetch
