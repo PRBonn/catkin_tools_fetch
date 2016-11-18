@@ -1,42 +1,43 @@
-# Travis auto-virtualenv isn't supported on OS X
 language: generic
 matrix:
   include:
-    - dist: precise
-      python: 2.7
-      language: python
-      python: "2.7"
-      os: linux
-      env: PYTHON=/usr/bin/python2.7
-    - dist: precise
-      python: 3.4
-      language: python
-      python: "3.4"
-      os: linux
-      env: PYTHON=/usr/bin/python3.4
-    - dist: trusty
-      python: 2.7
-      language: python
-      python: "2.7"
-      os: linux
-      env: PYTHON=/usr/bin/python2.7
-    - dist: trusty
-      python: 3.4
-      language: python
-      python: "3.4"
-      os: linux
-      env: PYTHON=/usr/bin/python3.4
+  - dist: precise
+    python: '2.7'
+    language: python
+    os: linux
+    env: PYTHON=/usr/bin/python2.7
+  - dist: precise
+    python: '3.4'
+    language: python
+    os: linux
+    env: PYTHON=/usr/bin/python3.4
+  - dist: trusty
+    python: '2.7'
+    language: python
+    os: linux
+    env: PYTHON=/usr/bin/python2.7
+  - dist: trusty
+    python: '3.4'
+    language: python
+    os: linux
+    env: PYTHON=/usr/bin/python3.4
 before_install:
-  # Install catkin_tools dependencies
-  - pip install setuptools argparse catkin-pkg catkin_tools trollius
-  - pip install flake8 coverage codacy-coverage
+- pip install setuptools argparse catkin-pkg catkin_tools trollius
+- pip install flake8 coverage codacy-coverage
 install:
-  # Install catkin_tools
-  - python setup.py develop
+- python setup.py develop
 script:
-  # Run catkin_tools test harness
-  - python setup.py nosetests -s --with-coverage --cover-xml
+- python setup.py nosetests -s --with-coverage --cover-xml
 after_success:
-  - python-codacy-coverage -r coverage.xml
+- python-codacy-coverage -r coverage.xml
 notifications:
   email: false
+deploy:
+  provider: pypi
+  user: niosus
+  password:
+    secure: Lsb+z0ivhMRtCJBFsNbNPV+/U5bARVvMd5zsz6zCXLydPwk/OFOUHQZnVjfJbRqRAf5OsALHYu/1NsHYFb76H5pXJjxXYw2+/MgS4wqFfp9y//BtFsQfRvQgGcLiAx0xQ4RfnBqgFTg7jTtRJbvXS1yQ02d3haDCwtv/MNZixNVcDutjuxiYbFTrZ40EWC48qsrg8Uw5ZVONzSabNG9GAOMpufHPJBeWupFmSIUj5GIphW9Gd+3GM8Sg+IwWGHfj2u0tb0EiLt4XKIWjzo2VqGe4TqKV/K5g/osaj8mNlXFKLYZBa4jEG70tYv/hp9kruVIQoIMWOuY0Wtei+OQLPtgOOalZIsLoEFeEv0Q/X7Hcq/GXvXtQJPOhR7o0W2oKz2L6lYuPfE9hPC98OTySrOei/TkiH9ZC+XQ3QqE70LMfHIVXYdAz4kltSMg6GVj4RyLNGnhgN3epKW6GYmNGDJXzZZEVjU3OB0FyQs4b3G2+kXHa/Kd8DEXk/ffV7PhA7tTTFVnbz8F1cKgj3JjkaivDcPjLazxb5yjFHZfrkEWwcsvEZ4WTXqsDh9SpoJS4mbho/2xBnLy/xsbF7tC0EEG9q3rNuexo257F0U5vV3fxRQqkpmmfqmSRgDpkBpsltw6XyTvmRROB/PPtg7/nbLfKBBZQqTOVnEa7boqAcok=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
+    repo: niosus/catkin_tools_fetch
