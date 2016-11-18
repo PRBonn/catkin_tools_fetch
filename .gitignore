@@ -56,8 +56,4 @@ docs/_build/
 target/
 *.pyc
 
-/catkin_fetch/cli.pyc
-
-/catkin_fetch/__init__.pyc
-
 /cover/

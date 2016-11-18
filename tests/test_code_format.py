@@ -5,7 +5,7 @@ import subprocess
 def test_flake8():
     """Test source code for pyFlakes and PEP8 conformance"""
     this_dir = os.path.dirname(os.path.abspath(__file__))
-    source_dir = os.path.join(this_dir, '..', 'catkin_fetch')
+    source_dir = os.path.join(this_dir, '..', 'catkin_tools_fetch')
     cmd = ['flake8', source_dir, '--count', '--max-line-length=120']
     # work around for https://gitlab.com/pycqa/flake8/issues/179
     cmd.extend(['--jobs', '1'])

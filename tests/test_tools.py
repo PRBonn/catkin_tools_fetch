@@ -1,5 +1,5 @@
 import unittest
-from catkin_fetch.fetcher.tools import Tools
+from catkin_tools_fetch.fetcher.tools import Tools
 
 
 class TestTools(unittest.TestCase):

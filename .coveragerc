@@ -2,10 +2,10 @@
 [run]
 include =
     # coverage for local files only
-    catkin_fetch/*
+    catkin_tools_fetch/*
 omit =
     # omit main
-    catkin_fetch/cli.py
+    catkin_tools_fetch/cli.py
 
 [html]
 directory = coverage_html_report

@@ -2,7 +2,6 @@ import os
 import sys
 from stat import ST_MODE
 from distutils import log
-from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
 
@@ -27,7 +26,6 @@ osx_resources_path = os.path.join(
 
 
 class PermissiveInstall(install):
-
     def run(self):
         install.run(self)
         if os.name == 'posix':
@@ -37,29 +35,22 @@ class PermissiveInstall(install):
                 log.info("changing permissions of %s to %o" % (file, mode))
                 os.chmod(file, mode)
 
-        # Provide information about bash completion after default install.
-        if (sys.platform.startswith("linux") and
-                self.install_data == "/usr/local"):
-            log.info("""
-----------------------------------------------------------------
-To enable tab completion, add the following to your '~/.bashrc':
-  source {0}
-----------------------------------------------------------------
-""".format(os.path.join(self.install_data,
-                        'etc/bash_completion.d',
-                        'catkin_tools-completion.bash')))
-
+version_str = '0.0.1'
+github_url = 'https://github.com/niosus/catkin_tools_fetch'
 
 setup(
     name='catkin_tools_fetch',
-    version='0.0.1',
-    packages=find_packages(exclude=['tests', 'docs']),
+    packages=['catkin_tools_fetch'],
+    version=version_str,
     install_requires=install_requires,
     author='Igor Bogoslavskyi',
     author_email='igor.bogoslavskyi@uni-bonn.de',
     maintainer='Igor Bogoslavskyi',
     maintainer_email='igor.bogoslavskyi@uni-bonn.de',
     keywords=['catkin', 'catkin_tools'],
+    license="BSD",
+    url=github_url,
+    download_url=github_url + '/tarball/' + version_str,
     classifiers=[
         'Environment :: Console',
         'Intended Audience :: Developers',
@@ -72,8 +63,8 @@ the packages found inside the catkin workspace.
 """,
     test_suite='tests',
     entry_points={
-        'catkin_tools.commands.catkin.verbs': [
-            'fetch = catkin_fetch:description',
+        'catkin_tools_fetch.commands.catkin.verbs': [
+            'fetch = catkin_tools_fetch:description',
         ],
     },
     cmdclass={'install': PermissiveInstall},
