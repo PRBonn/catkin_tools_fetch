@@ -48,13 +48,14 @@ setup(
     maintainer='Igor Bogoslavskyi',
     maintainer_email='igor.bogoslavskyi@uni-bonn.de',
     keywords=['catkin', 'catkin_tools'],
-    license="BSD",
+    license="Apache 2.0",
     url=github_url,
     download_url=github_url + '/tarball/' + version_str,
     classifiers=[
         'Environment :: Console',
-        'Intended Audience :: Developers',
         'Programming Language :: Python',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: Apache Software License',
     ],
     description="A new verb 'fetch' for catkin_tools",
     long_description="""
