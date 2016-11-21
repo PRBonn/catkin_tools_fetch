@@ -20,9 +20,9 @@ except ImportError as e:
 from catkin_tools.argument_parsing import add_context_args
 from catkin_tools.context import Context
 
-from .fetcher.dependency_parser import Parser
-from .fetcher.downloader import Downloader
-from .fetcher.tools import Tools
+from catkin_tools_fetch.fetcher.dependency_parser import Parser
+from catkin_tools_fetch.fetcher.downloader import Downloader
+from catkin_tools_fetch.fetcher.tools import Tools
 
 logging.basicConfig()
 log = logging.getLogger('fetch')
@@ -146,7 +146,12 @@ def fetch(packages, workspace, context, default_url):
                 package_folder = path.join(ws_path, package_path)
                 deps_to_fetch.update(parser.get_dependencies(package_folder))
                 already_fetched.add(package.name)
-        downloader = Downloader(ws_path, available_pkgs, ignore_pkgs)
+        try:
+            downloader = Downloader(ws_path, available_pkgs, ignore_pkgs)
+        except ValueError as e:
+            log.critical(" Encountered error. Abort.")
+            log.critical(" Error message: %s", e.message)
+            return 1
         error_code = downloader.download_dependencies(deps_to_fetch)
         if len(already_fetched) == initial_cloned_pkgs:
             log.info(" No new dependencies. Done.")

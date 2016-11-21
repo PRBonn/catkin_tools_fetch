@@ -9,7 +9,7 @@ import subprocess
 from os import path
 from subprocess import PIPE
 
-from .tools import Tools
+from catkin_tools_fetch.fetcher.tools import Tools
 
 log = logging.getLogger('fetch')
 
@@ -41,11 +41,14 @@ class Downloader(object):
         Args:
             ws_path (str): Workspace path. This is where packages live.
             available_pkgs (iterable): dict of available packages in workspace.
-            ignore_pkgs (iterable): a set of packages to ignore (e.g. ROS ones).
+            ignore_pkgs (iterable): set of packages to ignore (e.g. ROS ones).
         """
         super(Downloader, self).__init__()
         if not path.exists(ws_path):
-            raise ValueError("workspace '{}' does not exist".format(ws_path))
+            raise ValueError("""
+            Folder '{}' is missing.
+            Are you running 'fetch' from a catkin workspace?
+            """.format(ws_path))
         self.ws_path = ws_path
         self.available_pkgs = available_pkgs
         self.ignore_pkgs = ignore_pkgs

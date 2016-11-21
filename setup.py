@@ -3,6 +3,7 @@ import sys
 from stat import ST_MODE
 from distutils import log
 from setuptools import setup
+from setuptools import find_packages
 from setuptools.command.install import install
 
 # Setup installation dependencies
@@ -36,12 +37,12 @@ class PermissiveInstall(install):
                 os.chmod(file, mode)
 
 
-version_str = '0.0.4'
+version_str = '0.0.5'
 github_url = 'https://github.com/niosus/catkin_tools_fetch'
 
 setup(
     name='catkin_tools_fetch',
-    packages=['catkin_tools_fetch'],
+    packages=find_packages(exclude=['tests', 'docs']),
     version=version_str,
     install_requires=install_requires,
     author='Igor Bogoslavskyi',
