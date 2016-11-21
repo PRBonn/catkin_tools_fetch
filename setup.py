@@ -35,7 +35,8 @@ class PermissiveInstall(install):
                 log.info("changing permissions of %s to %o" % (file, mode))
                 os.chmod(file, mode)
 
-version_str = '0.0.3'
+
+version_str = '0.0.4'
 github_url = 'https://github.com/niosus/catkin_tools_fetch'
 
 setup(
@@ -64,7 +65,7 @@ the packages found inside the catkin workspace.
 """,
     test_suite='tests',
     entry_points={
-        'catkin_tools_fetch.commands.catkin.verbs': [
+        'catkin_tools.commands.catkin.verbs': [
             'fetch = catkin_tools_fetch:description',
         ],
     },
