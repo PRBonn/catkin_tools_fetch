@@ -24,7 +24,7 @@ class Parser(object):
     """
 
     XML_FILE_NAME = "package.xml"
-    TAGS = ["buildtool_depend", "build_depend"]
+    TAGS = ["build_depend"]
     URL_TAGS = ["git_url"]
 
     def __init__(self, download_mask, pkg_name):
@@ -70,12 +70,35 @@ class Parser(object):
         xmldoc = minidom.parse(path_to_xml)
         all_deps = []
         for tag in Parser.TAGS:
-            all_deps += Parser.__node_to_list(xmldoc, tag)
+            deps = Parser.__node_to_list(xmldoc, tag)
+            deps = Parser.__fix_dependencies(deps, self.pkg_name)
+            all_deps += deps
         log.info("  %-21s: Found %s dependencies.",
                  Tools.decorate(self.pkg_name),
                  len(all_deps))
+        log.debug(" Dependencies: %s", all_deps)
         deps_with_urls = self.__init_dep_dict(all_deps)
         return Parser.__specify_explicit_urls(xmldoc, deps_with_urls)
+
+    @staticmethod
+    def __fix_dependencies(deps, pkg_name):
+        """Fix dependencies if they are malformed.
+
+        Args:
+            deps (str[]): List of dependencies.
+            pkg_name (str): Current package name.
+
+        Returns:
+            str[]: Fixed dependencies.
+        """
+        fixed_deps = list(deps)
+        for i, dep in enumerate(deps):
+            fixed_deps[i] = dep.strip()
+            if fixed_deps[i] != dep:
+                log.warning(
+                    " [%s]: Fix dependency in `package.xml`: [%s] to [%s]",
+                    pkg_name, dep, fixed_deps[i])
+        return fixed_deps
 
     @staticmethod
     def __specify_explicit_urls(xmldoc, intial_dep_dict):

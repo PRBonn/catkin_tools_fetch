@@ -31,6 +31,17 @@ class TestDownloader(unittest.TestCase):
                                   'README.md')
         self.assertTrue(path.exists(expected_path))
 
+    def test_download_dependencies_again(self):
+        temp_dir = tempfile.mkdtemp("_ws", "temp_")
+        downloader = Downloader(temp_dir, [], [])
+        dep_dict = {"fetch": "https://github.com/niosus/catkin_tools_fetch"}
+        downloader.download_dependencies(dep_dict)
+        downloader.download_dependencies(dep_dict)
+        expected_path = path.join(temp_dir,
+                                  'fetch',
+                                  'README.md')
+        self.assertTrue(path.exists(expected_path))
+
     def test_no_download_for_ros_deps(self):
         temp_dir = tempfile.mkdtemp("_ws", "no_ros_")
         downloader = Downloader(temp_dir, [], [])
