@@ -55,6 +55,7 @@ class Tools(object):
                 get_ros_packages_command,
                 stderr=subprocess.STDOUT,
                 shell=True)
+            output = str(output)
             output = output.splitlines()
             for pkg_line in output:
                 pkg_list.append(pkg_line.split(' ')[0])

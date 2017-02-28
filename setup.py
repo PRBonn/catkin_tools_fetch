@@ -37,7 +37,7 @@ class PermissiveInstall(install):
                 os.chmod(file, mode)
 
 
-version_str = '0.0.6'
+version_str = '0.0.7'
 github_url = 'https://github.com/niosus/catkin_tools_fetch'
 
 setup(
