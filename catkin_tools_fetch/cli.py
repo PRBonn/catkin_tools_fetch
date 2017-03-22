@@ -7,6 +7,7 @@ Attributes:
 import sys
 import logging
 from os import path
+from argparse import ArgumentParser
 
 try:
     from catkin_pkg.packages import find_packages
@@ -86,11 +87,18 @@ def prepare_arguments_deps(parser):
         sources from version control system of choice."""
     add_context_args(parser)
 
+    parent_parser = ArgumentParser(add_help=False)
+
     # add config flags to all groups that need it
-    config_group = parser.add_argument_group('Config')
-    config_group.add_argument(
+    parent_parser.add_argument(
         '--default_url', default="{package}",
         help='Where to look for packages by default.')
+
+    # Behavior
+    parent_parser.add_argument('--verbose', '-v',
+                               action='store_true',
+                               default=False,
+                               help='Print output from commands.')
 
     packages_help_msg = """
         Packages for which the dependencies are analyzed.
@@ -102,28 +110,31 @@ def prepare_arguments_deps(parser):
     # add a parser for update sub-verb
     update_help_msg = """
         Update the existing repositories to their latest state from remote."""
-    parser_update = subparsers.add_parser('update', help=update_help_msg)
+    parser_update = subparsers.add_parser(
+        'update', help=update_help_msg, parents=[parent_parser])
     config_update_group = parser_update.add_argument_group('Config')
     conflict_help_msg = """ When we pull a git repository there can be
         conflicts. We need to resolve them in some way. You can pick this here.
         By default the plugin will '%(default)s'."""
     config_update_group.add_argument('--on-conflict', '-r',
-                              choices=['abort', 'stash', 'reset'],
-                              default='abort',
-                              help=conflict_help_msg)
+                                     choices=['abort', 'stash', 'reset'],
+                                     default='abort',
+                                     help=conflict_help_msg)
 
     update_pkg_group = parser_update.add_argument_group(
         'Packages',
         'Control for which packages we update dependencies.')
     update_pkg_group.add_argument('packages',
-                              metavar='PKGNAME',
-                              nargs='*',
-                              help=packages_help_msg)
+                                  metavar='PKGNAME',
+                                  nargs='*',
+                                  help=packages_help_msg)
 
     # add a parser for fetch sub-verb
     fetch_help_msg = """
         Fetch the dependencies stored package.xml files."""
-    parser_fetch = subparsers.add_parser('fetch', help=fetch_help_msg)
+    parser_fetch = subparsers.add_parser('fetch',
+                                         help=fetch_help_msg,
+                                         parents=[parent_parser])
     fetch_group = parser_fetch.add_argument_group(
         'Packages',
         'Control for which packages we fetch dependencies.')
@@ -131,14 +142,6 @@ def prepare_arguments_deps(parser):
                              metavar='PKGNAME',
                              nargs='*',
                              help=packages_help_msg)
-
-    # Behavior
-    behavior_group = parser.add_argument_group(
-        'Interface', 'The behavior of the command-line interface.')
-    add = behavior_group.add_argument
-    add('--verbose', '-v', action='store_true', default=False,
-        help='Print output from commands.')
-
     return parser
 
 
