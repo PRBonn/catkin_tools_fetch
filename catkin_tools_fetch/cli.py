@@ -70,6 +70,7 @@ def prepare_arguments(parser):
 
     return parser
 
+
 def prepare_arguments_deps(parser):
     """Parse arguments that belong to this verb.
 
@@ -102,13 +103,22 @@ def prepare_arguments_deps(parser):
     update_help_msg = """
         Update the existing repositories to their latest state from remote."""
     parser_update = subparsers.add_parser('update', help=update_help_msg)
-    update_group = parser_update.add_argument_group(
+    config_update_group = parser_update.add_argument_group('Config')
+    conflict_help_msg = """ When we pull a git repository there can be
+        conflicts. We need to resolve them in some way. You can pick this here.
+        By default the plugin will '%(default)s'."""
+    config_update_group.add_argument('--on-conflict', '-r',
+                              choices=['abort', 'stash', 'reset'],
+                              default='abort',
+                              help=conflict_help_msg)
+
+    update_pkg_group = parser_update.add_argument_group(
         'Packages',
         'Control for which packages we update dependencies.')
-    update_group.add_argument('packages',
-                             metavar='PKGNAME',
-                             nargs='*',
-                             help=packages_help_msg)
+    update_pkg_group.add_argument('packages',
+                              metavar='PKGNAME',
+                              nargs='*',
+                              help=packages_help_msg)
 
     # add a parser for fetch sub-verb
     fetch_help_msg = """
