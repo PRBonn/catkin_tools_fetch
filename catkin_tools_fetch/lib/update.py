@@ -3,25 +3,18 @@
 Attributes:
     log (TYPE): Description
 """
-import re
 import logging
 import subprocess
 from os import path
 
 from catkin_tools_fetch.lib.tools import Tools
+from catkin_tools_fetch.lib.tools import GitBridge
 
 log = logging.getLogger('deps')
 
 
 class Updater(object):
     """Updater class. Handles the updating of all packages."""
-
-    GIT_STATUS_CMD = "git status --porcelain --branch"
-    GIT_PULL_CMD_MASK = "git pull origin {branch}"
-
-    GIT_CLEAN_MSG = "working directory clean"
-
-    BRANCH_REGEX = re.compile("## (?!HEAD)([\w\-_]+)")
 
     CHANGES_TAG = "[UNCOMMITTED CHANGES]"
     NO_TRACK_TAG = "[NO BRANCH]"
@@ -69,27 +62,14 @@ class Updater(object):
         packages = self.filter_packages(selected_packages)
         for ws_folder, package in packages.items():
             folder = path.join(self.ws_path, ws_folder)
-            output = subprocess.check_output(Updater.GIT_STATUS_CMD,
-                                             stderr=subprocess.STDOUT,
-                                             shell=True,
-                                             cwd=folder)
+            output, branch = GitBridge.status(folder)
             # when no changes - output is single line with name of branch
             if output.count('\n') > 1:
                 log.info("  %-21s: %s", Tools.decorate(package.name),
                          Updater.CHANGES_TAG)
                 continue
-            match = Updater.BRANCH_REGEX.match(output)
-            if not match:
-                log.info("  %-21s: %s",
-                         Tools.decorate(package.name), Updater.NO_TRACK_TAG)
-                continue
-            branch = match.groups()[0]
-            git_pull_cmd = Updater.GIT_PULL_CMD_MASK.format(branch=branch)
             try:
-                output = subprocess.check_output(git_pull_cmd,
-                                                 stderr=subprocess.STDOUT,
-                                                 shell=True,
-                                                 cwd=folder)
+                output = GitBridge.pull(folder, branch)
                 if "Already up-to-date" in output:
                     log.info("  %-21s: %s",
                              Tools.decorate(package.name),

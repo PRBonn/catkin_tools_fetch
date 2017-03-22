@@ -5,8 +5,47 @@ Attributes:
 """
 import subprocess
 import logging
+import re
 
 log = logging.getLogger('deps')
+
+
+class GitBridge(object):
+    """A bridge to git and its cmd functions."""
+
+    STATUS_CMD = "git status --porcelain --branch"
+    GIT_PULL_CMD_MASK = "git pull origin {branch}"
+
+    BRANCH_REGEX = re.compile("## (?!HEAD)([\w\-_]+)")
+
+    @staticmethod
+    def status(repo_folder):
+        """Get output from `git pull --porcelain --branch` for a repo."""
+        output = subprocess.check_output(GitBridge.GIT_STATUS_CMD,
+                                         stderr=subprocess.STDOUT,
+                                         shell=True,
+                                         cwd=repo_folder)
+        branch = GitBridge.get_branch_name(output)
+        return output, branch
+
+    @staticmethod
+    def pull(repo_folder, branch):
+        """Pull the repo's branch and return the output."""
+        git_pull_cmd = GitBridge.GIT_PULL_CMD_MASK.format(branch=branch)
+        output = subprocess.check_output(git_pull_cmd,
+                                         stderr=subprocess.STDOUT,
+                                         shell=True,
+                                         cwd=repo_folder)
+        return output
+
+    @staticmethod
+    def get_branch_name(git_status_output):
+        """Parse branch name from the output of git status."""
+        match = GitBridge.BRANCH_REGEX.match(git_status_output)
+        if not match:
+            return None
+        branch = match.groups()[0]
+        return branch
 
 
 class Tools(object):
