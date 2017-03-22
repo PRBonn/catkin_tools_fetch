@@ -163,18 +163,35 @@ def main(opts):
 
     context = Context.load(opts.workspace, opts.profile, opts, append=True)
     default_url = Tools.prepare_default_url(opts.default_url)
-    print(opts)
     if not opts.workspace:
         log.critical(" Workspace undefined! Abort!")
         return 1
     if opts.subverb == 'update':
-        log.error(" Sorry, 'update' not implemented yet, but is planned.")
-        return 1
+        return update(packages=opts.packages,
+                      workspace=opts.workspace,
+                      context=context,
+                      default_url=default_url)
     if opts.verb == 'fetch' or opts.subverb == 'fetch':
         return fetch(packages=opts.packages,
                      workspace=opts.workspace,
                      context=context,
                      default_url=default_url)
+
+
+def update(packages, workspace, context, default_url):
+    """Update dependencies from the available remotes.
+
+    Args:
+        packages (list): A list of packages provided by the user.
+        workspace (str): Path to a workspace (without src/ in the end).
+        context (Context): Current context. Needed to find current packages.
+        default_url (str): A default url with a {package} placeholder in it.
+
+    Returns:
+        int: Return code. 0 if success. Git error code otherwise.
+    """
+    log.error(" Sorry, 'update' not implemented yet, but is planned.")
+    return 1
 
 
 def fetch(packages, workspace, context, default_url):
