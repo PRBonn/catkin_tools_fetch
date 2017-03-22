@@ -68,6 +68,8 @@ the packages found inside the catkin workspace.
     entry_points={
         'catkin_tools.commands.catkin.verbs': [
             'fetch = catkin_tools_fetch:description',
+            'deps = catkin_tools_fetch:description_deps',
+            'dependencies = catkin_tools_fetch:description_deps',
         ],
     },
     cmdclass={'install': PermissiveInstall},

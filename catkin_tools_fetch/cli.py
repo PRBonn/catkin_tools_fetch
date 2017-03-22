@@ -60,9 +60,67 @@ def prepare_arguments(parser):
     config_group.add_argument(
         '--default_url', default="{package}",
         help='Where to look for packages by default.')
+
+    # Behavior
+    behavior_group = parser.add_argument_group(
+        'Interface', 'The behavior of the command-line interface.')
+    add = behavior_group.add_argument
+    add('--verbose', '-v', action='store_true', default=False,
+        help='Print output from commands.')
+
+    return parser
+
+def prepare_arguments_deps(parser):
+    """Parse arguments that belong to this verb.
+
+    Args:
+        parser (argparser): Argument parser
+
+    Returns:
+        argparser: Parser that knows about our flags.
+    """
+    parser.description = """ Manage dependencies for one or more packages in
+        a catkin workspace. This reads dependencies from package.xml file of
+        each of the packages in the workspace and tries to download their
+        sources from version control system of choice."""
+    add_context_args(parser)
+
+    # add config flags to all groups that need it
+    config_group = parser.add_argument_group('Config')
     config_group.add_argument(
-        '--update', '-u', action='store_true', default=False,
-        help='Update the dependencies to latest version.')
+        '--default_url', default="{package}",
+        help='Where to look for packages by default.')
+
+    packages_help_msg = """
+        Packages for which the dependencies are analyzed.
+        If no packages are given, all packages are processed."""
+
+    # we need subparsers for this verb
+    subparsers = parser.add_subparsers(dest='subverb', help="Possible verbs.")
+
+    # add a parser for update sub-verb
+    update_help_msg = """
+        Update the existing repositories to their latest state from remote."""
+    parser_update = subparsers.add_parser('update', help=update_help_msg)
+    update_group = parser_update.add_argument_group(
+        'Packages',
+        'Control for which packages we update dependencies.')
+    update_group.add_argument('packages',
+                             metavar='PKGNAME',
+                             nargs='*',
+                             help=packages_help_msg)
+
+    # add a parser for fetch sub-verb
+    fetch_help_msg = """
+        Fetch the dependencies stored package.xml files."""
+    parser_fetch = subparsers.add_parser('fetch', help=fetch_help_msg)
+    fetch_group = parser_fetch.add_argument_group(
+        'Packages',
+        'Control for which packages we fetch dependencies.')
+    fetch_group.add_argument('packages',
+                             metavar='PKGNAME',
+                             nargs='*',
+                             help=packages_help_msg)
 
     # Behavior
     behavior_group = parser.add_argument_group(
@@ -92,14 +150,14 @@ def main(opts):
 
     context = Context.load(opts.workspace, opts.profile, opts, append=True)
     default_url = Tools.prepare_default_url(opts.default_url)
-
+    print(opts)
     if not opts.workspace:
         log.critical(" Workspace undefined! Abort!")
         return 1
-    if opts.update:
+    if opts.subverb == 'update':
         log.error(" Sorry, 'update' not implemented yet, but is planned.")
         return 1
-    if opts.verb == 'fetch':
+    if opts.verb == 'fetch' or opts.subverb == 'fetch':
         return fetch(packages=opts.packages,
                      workspace=opts.workspace,
                      context=context,

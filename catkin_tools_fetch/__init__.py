@@ -14,6 +14,7 @@
 
 from .cli import main
 from .cli import prepare_arguments
+from .cli import prepare_arguments_deps
 
 # This describes this command to the loader
 description = dict(
@@ -21,4 +22,12 @@ description = dict(
     description='Fetch dependencies of packages in the workspace',
     main=main,
     prepare_arguments=prepare_arguments,
+)
+
+# This describes this command to the loader
+description_deps = dict(
+    verb='deps',
+    description='Manage dependencies',
+    main=main,
+    prepare_arguments=prepare_arguments_deps,
 )
