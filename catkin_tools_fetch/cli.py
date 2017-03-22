@@ -107,7 +107,7 @@ def main(opts):
 
 
 def fetch(packages, workspace, context, default_url):
-    """Detch dependencies of a package.
+    """Fetch dependencies of a package.
 
     Args:
         packages (list): A list of packages provided by the user.
@@ -119,7 +119,7 @@ def fetch(packages, workspace, context, default_url):
         int: Return code. 0 if success. Git error code otherwise.
     """
     fetch_all = False
-    if len(packages) == 0:
+    if not packages:
         fetch_all = True
 
     ws_path = path.join(workspace, 'src')
