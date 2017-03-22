@@ -24,6 +24,7 @@ from catkin_tools.context import Context
 from catkin_tools_fetch.fetcher.dependency_parser import Parser
 from catkin_tools_fetch.fetcher.downloader import Downloader
 from catkin_tools_fetch.fetcher.tools import Tools
+from catkin_tools_fetch.update.update import update_folders
 
 logging.basicConfig()
 log = logging.getLogger('fetch')
@@ -170,7 +171,8 @@ def main(opts):
         return update(packages=opts.packages,
                       workspace=opts.workspace,
                       context=context,
-                      default_url=default_url)
+                      default_url=default_url,
+                      conflict_strategy=opts.on_conflict)
     if opts.verb == 'fetch' or opts.subverb == 'fetch':
         return fetch(packages=opts.packages,
                      workspace=opts.workspace,
@@ -178,8 +180,8 @@ def main(opts):
                      default_url=default_url)
 
 
-def update(packages, workspace, context, default_url):
-    """Update dependencies from the available remotes.
+def update(packages, workspace, context, default_url, conflict_strategy):
+    """Update packages from the available remotes.
 
     Args:
         packages (list): A list of packages provided by the user.
@@ -190,8 +192,12 @@ def update(packages, workspace, context, default_url):
     Returns:
         int: Return code. 0 if success. Git error code otherwise.
     """
-    log.error(" Sorry, 'update' not implemented yet, but is planned.")
-    return 1
+    ws_path = path.join(workspace, 'src')
+    workspace_packages = find_packages(context.source_space_abs,
+                                       exclude_subspaces=True,
+                                       warnings=[])
+    update_folders(ws_path, workspace_packages, conflict_strategy)
+    return 0
 
 
 def fetch(packages, workspace, context, default_url):
