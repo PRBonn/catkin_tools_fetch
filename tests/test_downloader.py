@@ -13,14 +13,6 @@ class TestDownloader(unittest.TestCase):
         self.assertEqual(downloader.available_pkgs, [])
         self.assertEqual(downloader.ignore_pkgs, [])
 
-    def test_repository_exists(self):
-        http_url = "https://github.com/niosus/catkin_tools_fetch"
-        self.assertTrue(Downloader.repository_exists(http_url))
-
-        wrong_url = "https://github.com/niosus"
-        self.assertFalse(Downloader.repository_exists(wrong_url))
-        self.assertFalse(Downloader.repository_exists(""))
-
     def test_download_dependencies_simple(self):
         temp_dir = tempfile.mkdtemp("_ws", "temp_")
         downloader = Downloader(temp_dir, [], [])

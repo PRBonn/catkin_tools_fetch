@@ -4,12 +4,11 @@ Attributes:
     log (logging.Log): logger
 """
 import logging
-import subprocess
 
 from os import path
-from subprocess import PIPE
 
 from catkin_tools_fetch.lib.tools import Tools
+from catkin_tools_fetch.lib.tools import GitBridge
 
 log = logging.getLogger('deps')
 
@@ -23,15 +22,10 @@ class Downloader(object):
         ws_path (str): Workspace path. This is where packages live.
     """
 
-    GIT_CHECK_CMD_MASK = "git ls-remote {url}"
     GIT_CLONE_CMD_MASK = "git clone --recursive {url} {path}"
 
     IGNORE_TAG = "[IGNORED]"
     NOT_FOUND_TAG = "[NOT FOUND]"
-
-    EXISTS_TAG = "[ALREADY EXISTS]"
-    CLONED_TAG = "[CLONED]"
-    ERROR_TAG = "[ERROR]"
 
     NO_ERROR = 0
 
@@ -85,31 +79,17 @@ class Downloader(object):
             if name in self.available_pkgs:
                 log.info("  %-21s: %s",
                          Tools.decorate(name),
-                         Downloader.EXISTS_TAG)
+                         GitBridge.EXISTS_TAG)
                 continue
             dep_path = path.join(self.ws_path, name)
-            cmd_clone = Downloader.GIT_CLONE_CMD_MASK.format(
-                url=url, path=dep_path)
-            try:
-                subprocess.check_output(cmd_clone,
-                                        stderr=subprocess.STDOUT,
-                                        shell=True)
-                log.info("  %-21s: %s",
-                         Tools.decorate(name),
-                         Downloader.CLONED_TAG)
-            except subprocess.CalledProcessError as e:
-                out_str = e.output.decode("utf8")
-                log.debug(" Clone output: %s", out_str)
-                if "already exists" in out_str:
-                    log.info("  %-21s: %s",
-                             Tools.decorate(name),
-                             Downloader.EXISTS_TAG)
-                else:
-                    log.error("  %-21s: %s Git error code: %s",
-                              Tools.decorate(name),
-                              Downloader.ERROR_TAG,
-                              e.returncode)
-                    error_code = e.returncode
+            clone_result = GitBridge.clone(url, dep_path)
+            if clone_result in [GitBridge.CLONED_TAG, GitBridge.EXISTS_TAG]:
+                log.info("  %-21s: %s", Tools.decorate(name), clone_result)
+            elif clone_result == GitBridge.ERROR_TAG:
+                log.error("  %-21s: %s", Tools.decorate(name), clone_result)
+                error_code = 1
+            else:
+                log.error(" undefined result of clone.")
         return error_code
 
     def __check_dependencies(self, dep_dict):
@@ -131,7 +111,7 @@ class Downloader(object):
                 log.info("  %-21s: %s",
                          Tools.decorate(name),
                          Downloader.IGNORE_TAG)
-            elif Downloader.repository_exists(url):
+            elif GitBridge.repository_exists(url):
                 log.info("  %-21s: %s", Tools.decorate(name), url)
                 checked_deps[name] = url
             else:
@@ -139,25 +119,3 @@ class Downloader(object):
                          Tools.decorate(name),
                          Downloader.NOT_FOUND_TAG)
         return checked_deps
-
-    @staticmethod
-    def repository_exists(url):
-        """Check if repository exists.
-
-        Uses `git ls-remote` to check if the repository exists.
-
-        Args:
-            url (str): Url to check.
-
-        Returns:
-            bool: True if exists, False otherwise
-        """
-        if url == "":
-            return False
-        git_cmd = Downloader.GIT_CHECK_CMD_MASK.format(url=url)
-        try:
-            subprocess.check_call(git_cmd, stdout=PIPE,
-                                  stderr=PIPE, shell=True)
-            return True
-        except subprocess.CalledProcessError:
-            return False
