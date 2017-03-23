@@ -11,7 +11,7 @@ class TestGitBridge(unittest.TestCase):
         http_url = "https://github.com/niosus/catkin_tools_fetch"
         result = GitBridge.clone(http_url, "cloned_path")
         self.assertEqual(result, GitBridge.CLONED_TAG)
-        output, branch = GitBridge.status("cloned_path")
+        _, branch = GitBridge.status("cloned_path")
         self.assertEqual(branch, "master")
 
     def test_clone(self):
@@ -43,4 +43,3 @@ class TestGitBridge(unittest.TestCase):
         print(test_output)
         branch = GitBridge.get_branch_name(test_output)
         self.assertEqual(branch, "master")
-    pass
