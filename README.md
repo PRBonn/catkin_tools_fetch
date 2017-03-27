@@ -19,9 +19,13 @@ Currently the easiest way to install this verb is from `PyPI`:
 
 ## How to use ##
 Should be used from a catkin workspace as follows:
-
 ```
-catkin fetch --default_url YOUR_DEFAULT_URL
+catkin dependancies fetch --default_url YOUR_DEFAULT_URL
+```
+
+or
+```
+catkin deps fetch --default_url YOUR_DEFAULT_URL
 ```
 
 This command will look inside the `src/` folder of the current catkin workspace
