@@ -223,7 +223,7 @@ def fetch(packages, workspace, context, default_url):
 
     global_error_code = Downloader.NO_ERROR
 
-    # loop until there are still any new dependencies left to download
+    # loop until there are no new dependencies left to download
     while(True):
         log.info(" Searching for dependencies.")
         deps_to_fetch = {}
