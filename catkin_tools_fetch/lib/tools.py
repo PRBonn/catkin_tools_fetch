@@ -33,7 +33,11 @@ class GitBridge(object):
                                          shell=True,
                                          cwd=repo_folder)
         branch = GitBridge.get_branch_name(output)
-        return output, branch
+        # when no changes - output is single line with name of branch
+        has_changes = False
+        if output.count('\n') > 1:
+            has_changes = True
+        return output, branch, has_changes
 
     @staticmethod
     def pull(repo_folder, branch):

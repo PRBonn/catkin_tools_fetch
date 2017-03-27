@@ -1,4 +1,5 @@
 import unittest
+import os
 import shutil
 import tempfile
 from catkin_tools_fetch.lib.tools import GitBridge
@@ -15,17 +16,25 @@ class TestGitBridge(unittest.TestCase):
         """Remove the directory after the test."""
         shutil.rmtree(self.test_dir)
 
-    def test_pull(self):
-        """Test pulling a repository."""
-        pass
-
     def test_status(self):
         """Test that git status gives us branch and status."""
         http_url = "https://github.com/niosus/catkin_tools_fetch"
         result = GitBridge.clone(http_url, self.test_dir)
         self.assertEqual(result, GitBridge.CLONED_TAG)
-        _, branch = GitBridge.status(self.test_dir)
+        output, branch, has_changes = GitBridge.status(self.test_dir)
+        expected_output = "## master...origin/master\n"
+        self.assertEqual(output, expected_output)
         self.assertEqual(branch, "master")
+        self.assertFalse(has_changes)
+        test_file = os.path.join(self.test_dir, "test_file.txt")
+        with open(test_file, 'a'):
+            output, branch, has_changes = GitBridge.status(self.test_dir)
+            expected_output = """## master...origin/master
+?? test_file.txt
+"""
+            self.assertEqual(output, expected_output)
+            self.assertEqual(branch, "master")
+            self.assertTrue(has_changes)
 
     def test_clone(self):
         """Test if cloning works as expected."""
@@ -37,6 +46,17 @@ class TestGitBridge(unittest.TestCase):
         self.assertEqual(result, GitBridge.CLONED_TAG)
         result = GitBridge.clone(http_url, ".")
         self.assertEqual(result, GitBridge.EXISTS_TAG)
+
+    def test_pull(self):
+        """Test pulling a repository."""
+        http_url = "https://github.com/niosus/catkin_tools_fetch"
+        output = GitBridge.clone(http_url, self.test_dir)
+        output = GitBridge.pull(self.test_dir, "master")
+        expected_msg = """From https://github.com/niosus/catkin_tools_fetch
+ * branch            master     -> FETCH_HEAD
+Already up-to-date.
+"""
+        self.assertEqual(expected_msg, output)
 
     def test_repository_exists(self):
         """Test behavior if repository exists."""
