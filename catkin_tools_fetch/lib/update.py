@@ -23,8 +23,8 @@ class Updater(object):
     ERROR_TAG = "[GIT ERROR]"
     CONFLICT_TAG = "[MERGE CONFLICT]"
 
-    UP_TO_DATE_MSG = "Already up-to-date"
-    CONFLICT_MSG = "Automatic merge failed"
+    UP_TO_DATE_MSG = b"Already up-to-date"
+    CONFLICT_MSG = b"Automatic merge failed"
 
     OK_TAGS = [PULLED_TAG, UP_TO_DATE_TAG]
 
