@@ -23,8 +23,8 @@ class Updater(object):
     ERROR_TAG = "[GIT ERROR]"
     CONFLICT_TAG = "[MERGE CONFLICT]"
 
-    UP_TO_DATE_MSG = b"Already up-to-date"
-    CONFLICT_MSG = b"Automatic merge failed"
+    UP_TO_DATE_MSG = "Already up-to-date"
+    CONFLICT_MSG = "Automatic merge failed"
 
     OK_TAGS = [PULLED_TAG, UP_TO_DATE_TAG]
 
@@ -88,8 +88,12 @@ class Updater(object):
     @staticmethod
     def tag_from_output(output):
         """Get tag from output."""
-        if Updater.UP_TO_DATE_MSG in output:
+        try:
+            str_output = output.decode("utf-8")
+        except AttributeError:
+            str_output = output
+        if Updater.UP_TO_DATE_MSG in str_output:
             return Updater.UP_TO_DATE_TAG
-        if Updater.CONFLICT_MSG in output:
+        if Updater.CONFLICT_MSG in str_output:
             return Updater.CONFLICT_TAG
         return Updater.PULLED_TAG

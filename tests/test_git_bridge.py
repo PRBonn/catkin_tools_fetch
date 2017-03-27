@@ -22,14 +22,14 @@ class TestGitBridge(unittest.TestCase):
         result = GitBridge.clone(http_url, self.test_dir)
         self.assertEqual(result, GitBridge.CLONED_TAG)
         output, branch, has_changes = GitBridge.status(self.test_dir)
-        expected_output = "## master...origin/master\n"
+        expected_output = b"## master...origin/master\n"
         self.assertEqual(output, expected_output)
         self.assertEqual(branch, "master")
         self.assertFalse(has_changes)
         test_file = os.path.join(self.test_dir, "test_file.txt")
         with open(test_file, 'a'):
             output, branch, has_changes = GitBridge.status(self.test_dir)
-            expected_output = """## master...origin/master
+            expected_output = b"""## master...origin/master
 ?? test_file.txt
 """
             self.assertEqual(output, expected_output)
@@ -52,7 +52,7 @@ class TestGitBridge(unittest.TestCase):
         http_url = "https://github.com/niosus/catkin_tools_fetch"
         output = GitBridge.clone(http_url, self.test_dir)
         output = GitBridge.pull(self.test_dir, "master")
-        expected_msg = """From https://github.com/niosus/catkin_tools_fetch
+        expected_msg = b"""From https://github.com/niosus/catkin_tools_fetch
  * branch            master     -> FETCH_HEAD
 Already up-to-date.
 """
@@ -70,12 +70,13 @@ Already up-to-date.
     def test_get_branch_name(self):
         """Test getting the branch name."""
         test_output = """## master...origin/master
-            M package.xml
-            M src/nodes/full_stack.cpp
-            M src/scripts/CMakeLists.txt
-            M src/utils/velodyne_utils.cpp
-            M src/visualization/visualizer.cpp
-            ?? src/scripts/kitti_show_boxes.cpp"""
+M package.xml
+M src/nodes/full_stack.cpp
+M src/scripts/CMakeLists.txt
+M src/utils/velodyne_utils.cpp
+M src/visualization/visualizer.cpp
+?? src/scripts/kitti_show_boxes.cpp
+"""
         print(test_output)
         branch = GitBridge.get_branch_name(test_output)
         self.assertEqual(branch, "master")

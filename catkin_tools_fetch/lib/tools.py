@@ -150,8 +150,11 @@ class Tools(object):
                 get_ros_packages_command,
                 stderr=subprocess.STDOUT,
                 shell=True)
-            output = str(output)
-            output = output.splitlines()
+            try:
+                str_output = output.decode("utf-8")
+            except AttributeError:
+                str_output = output
+            output = str_output.splitlines()
             for pkg_line in output:
                 pkg_list.append(pkg_line.split(' ')[0])
             log.info(" [ROS]: Ignoring %s packages.", len(pkg_list))

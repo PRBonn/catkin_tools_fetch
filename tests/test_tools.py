@@ -30,4 +30,5 @@ class TestTools(unittest.TestCase):
         """Test that we actually remove the default ros packages from list."""
         pkgs = Tools.list_all_ros_pkgs()
         diff = pkgs.symmetric_difference(Tools.default_ros_packages)
+        print(diff)
         self.assertTrue(len(diff) < 100)
