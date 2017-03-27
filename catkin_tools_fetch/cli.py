@@ -21,13 +21,13 @@ except ImportError as e:
 from catkin_tools.argument_parsing import add_context_args
 from catkin_tools.context import Context
 
-from catkin_tools_fetch.fetch.dependency_parser import Parser
-from catkin_tools_fetch.fetch.downloader import Downloader
-from catkin_tools_fetch.update.update import update_folders
-from catkin_tools_fetch.common.tools import Tools
+from catkin_tools_fetch.lib.dependency_parser import Parser
+from catkin_tools_fetch.lib.downloader import Downloader
+from catkin_tools_fetch.lib.tools import Tools
+from catkin_tools_fetch.lib.update import Updater
 
 logging.basicConfig()
-log = logging.getLogger('fetch')
+log = logging.getLogger('deps')
 
 
 def prepare_arguments(parser):
@@ -196,7 +196,8 @@ def update(packages, workspace, context, default_url, conflict_strategy):
     workspace_packages = find_packages(context.source_space_abs,
                                        exclude_subspaces=True,
                                        warnings=[])
-    update_folders(ws_path, workspace_packages, conflict_strategy)
+    updater = Updater(ws_path, workspace_packages, conflict_strategy)
+    updater.update_packages(packages)
     return 0
 
 
