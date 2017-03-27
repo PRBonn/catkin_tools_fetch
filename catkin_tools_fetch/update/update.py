@@ -4,7 +4,7 @@ import logging
 import subprocess
 from os import path
 
-from catkin_tools_fetch.fetcher.tools import Tools
+from catkin_tools_fetch.common.tools import Tools
 
 log = logging.getLogger('fetch')
 
@@ -12,6 +12,8 @@ log = logging.getLogger('fetch')
 GIT_STATUS_CMD = "git status --porcelain --branch"
 GIT_PULL_CMD_MASK = "git pull origin {branch}"
 
+GIT_UP_TO_DATE_MSG = "Already up-to-date"
+GIT_MERGE_FAILED_MSG = "Automatic merge failed"
 GIT_CLEAN_MSG = "working directory clean"
 
 BRANCH_REGEX = re.compile("## (?!HEAD)([\w\-_]+)")
@@ -21,6 +23,9 @@ NO_TRACK_TAG = "[NO BRANCH]"
 UP_TO_DATE_TAG = "[UP TO DATE]"
 PULLED_TAG = "[PULLED]"
 ERROR_TAG = "[GIT ERROR]"
+CONFLICT_TAG = "[MERGE CONFLICT]"
+
+OK_TAGS = [PULLED_TAG, UP_TO_DATE_TAG]
 
 
 def update_folders(ws_path, packages, conflict_strategy):
@@ -55,12 +60,20 @@ def update_folders(ws_path, packages, conflict_strategy):
                                              stderr=subprocess.STDOUT,
                                              shell=True,
                                              cwd=folder)
-            if "Already up-to-date" in output:
-                log.info("  %-21s: %s",
-                         Tools.decorate(package.name), UP_TO_DATE_TAG)
-            else:
-                log.info("  %-21s: %s",
-                         Tools.decorate(package.name), PULLED_TAG)
+            status_tag = get_status_tag(output)
+            log_func = log.info
+            if status_tag not in OK_TAGS:
+                log_func = log.warning
+            log_func(Tools.decorate(package.name), status_tag)
         except subprocess.CalledProcessError as e:
             log.error("  %-21s: %s", Tools.decorate(package.name), ERROR_TAG)
             log.debug(" git pull returned error: %s", e)
+
+
+def get_status_tag(output):
+    """Get status from git command output."""
+    if GIT_UP_TO_DATE_MSG in output:
+        return UP_TO_DATE_TAG
+    if GIT_MERGE_FAILED_MSG in output:
+        return CONFLICT_TAG
+    return PULLED_TAG

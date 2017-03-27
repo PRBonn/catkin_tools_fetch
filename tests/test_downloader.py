@@ -1,7 +1,7 @@
 import unittest
 import tempfile
 from os import path
-from catkin_tools_fetch.fetcher.downloader import Downloader
+from catkin_tools_fetch.fetch.downloader import Downloader
 
 
 class TestDownloader(unittest.TestCase):

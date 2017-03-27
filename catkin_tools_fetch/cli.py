@@ -21,10 +21,10 @@ except ImportError as e:
 from catkin_tools.argument_parsing import add_context_args
 from catkin_tools.context import Context
 
-from catkin_tools_fetch.fetcher.dependency_parser import Parser
-from catkin_tools_fetch.fetcher.downloader import Downloader
-from catkin_tools_fetch.fetcher.tools import Tools
+from catkin_tools_fetch.fetch.dependency_parser import Parser
+from catkin_tools_fetch.fetch.downloader import Downloader
 from catkin_tools_fetch.update.update import update_folders
+from catkin_tools_fetch.common.tools import Tools
 
 logging.basicConfig()
 log = logging.getLogger('fetch')

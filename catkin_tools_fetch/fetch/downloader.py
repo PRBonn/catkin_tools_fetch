@@ -9,7 +9,7 @@ import subprocess
 from os import path
 from subprocess import PIPE
 
-from catkin_tools_fetch.fetcher.tools import Tools
+from catkin_tools_fetch.common.tools import Tools
 
 log = logging.getLogger('fetch')
 
