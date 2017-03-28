@@ -122,6 +122,6 @@ Already up-to-date.
 
     def test_list_strategies(self):
         """Test the list of all strategies."""
-        expected = set([Strategy.IGNORE, Strategy.ABORT, Strategy.STASH])
+        expected = set([Strategy.IGNORE, Strategy.ABORT])
         actual = set(Strategy.list_all())
         self.assertEquals(len(expected.symmetric_difference(actual)), 0)
