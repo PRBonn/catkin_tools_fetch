@@ -2,7 +2,7 @@
 import unittest
 import shutil
 import tempfile
-from unittest.mock import MagicMock, PropertyMock
+from mock import MagicMock, PropertyMock
 from catkin_tools_fetch.lib.update import Updater
 from catkin_tools_fetch.lib.tools import GitBridge
 
