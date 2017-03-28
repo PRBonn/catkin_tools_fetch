@@ -16,17 +16,17 @@ log = logging.getLogger('deps')
 class Updater(object):
     """Updater class. Handles the updating of all packages."""
 
+    PULLED_TAG = "[PULLED]"
+    UP_TO_DATE_TAG = "[UP TO DATE]"
+    OK_TAGS = [PULLED_TAG, UP_TO_DATE_TAG]
+
     CHANGES_TAG = "[UNCOMMITTED CHANGES]"
     NO_TRACK_TAG = "[NO BRANCH]"
-    UP_TO_DATE_TAG = "[UP TO DATE]"
-    PULLED_TAG = "[PULLED]"
     ERROR_TAG = "[GIT ERROR]"
     CONFLICT_TAG = "[MERGE CONFLICT]"
 
     UP_TO_DATE_MSG = "Already up-to-date"
     CONFLICT_MSG = "Automatic merge failed"
-
-    OK_TAGS = [PULLED_TAG, UP_TO_DATE_TAG]
 
     def __init__(self, ws_path, packages, conflict_strategy):
         """Initialize the updater.
@@ -63,27 +63,35 @@ class Updater(object):
 
         Args:
             selected_packages (str[]): List of packages picked by the user.
+
+        Returns:
+            status_msgs (list(tuple)): return a list of tupples (pkg_name, tag)
         """
         log.info(" Pulling packages:")
         packages = self.filter_packages(selected_packages)
+        status_msgs = []
         for ws_folder, package in packages.items():
+            log_func = log.info
+            picked_tag = None
             folder = path.join(self.ws_path, ws_folder)
             output, branch, has_changes = GitBridge.status(folder)
             if has_changes:
-                log.info("  %-21s: %s", Tools.decorate(package.name),
-                         Updater.CHANGES_TAG)
-                continue
-            try:
-                output = GitBridge.pull(folder, branch)
-                tag = Updater.tag_from_output(output)
                 log_func = log.info
-                if tag not in Updater.OK_TAGS:
-                    log_func = log.warning
-                log_func("  %-21s: %s", Tools.decorate(package.name), tag)
-            except subprocess.CalledProcessError as e:
-                log.error("  %-21s: %s",
-                          Tools.decorate(package.name), Updater.ERROR_TAG)
-                log.debug(" git pull returned error: %s", e)
+                picked_tag = Updater.CHANGES_TAG
+            else:
+                try:
+                    output = GitBridge.pull(folder, branch)
+                    picked_tag = Updater.tag_from_output(output)
+                except subprocess.CalledProcessError as e:
+                    picked_tag = Updater.ERROR_TAG
+                    log.debug(" git pull returned error: %s", e)
+            # change logger for warning if something is wrong
+            if picked_tag not in Updater.OK_TAGS:
+                log_func = log.warning
+            # now show the results to the user
+            status_msgs.append((package.name, picked_tag))
+            log_func("  %-21s: %s", Tools.decorate(package.name), picked_tag)
+        return status_msgs
 
     @staticmethod
     def tag_from_output(output):

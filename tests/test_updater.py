@@ -14,8 +14,8 @@ def generate_mock_packages(size):
         size (int): Number of packages to generate.
 
     Returns:
-        str[]: list of generated packages
-        dict(folder, pkg): dictionary of packages with mock folder as key
+        mock_list (str[]): list of generated mock packages
+        mock_dict (dict{folder, pkg}): dictionary of generated mock packages
     """
     mock_list = []
     mock_dict = {}
@@ -102,3 +102,19 @@ Already up-to-date.
 """
         tag = Updater.tag_from_output(output)
         self.assertEqual(tag, Updater.UP_TO_DATE_TAG)
+
+    def test_update_full_simple(self):
+        """Test updater end to end on single repo."""
+        http_url = "https://github.com/niosus/catkin_tools_fetch"
+        GitBridge.clone(http_url, self.test_dir)
+        pkg = MagicMock()
+        type(pkg).name = PropertyMock(return_value="pkg")
+        packages = {
+            ".": pkg
+        }
+        updater = Updater(self.test_dir, packages, "abort")
+        selected_packages = [pkg.name]
+        status_msgs = updater.update_packages(selected_packages)
+        self.assertEquals(len(status_msgs), 1)
+        self.assertEquals(status_msgs[0][0], "pkg")
+        self.assertEquals(status_msgs[0][1], Updater.UP_TO_DATE_TAG)
