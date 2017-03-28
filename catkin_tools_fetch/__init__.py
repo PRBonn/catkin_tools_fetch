@@ -31,3 +31,11 @@ description_deps = dict(
     main=main,
     prepare_arguments=prepare_arguments_deps,
 )
+
+# This describes this command to the loader
+description_dependencies = dict(
+    verb='dependencies',
+    description='Manage dependencies',
+    main=main,
+    prepare_arguments=prepare_arguments_deps,
+)
