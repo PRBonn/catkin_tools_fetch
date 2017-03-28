@@ -239,6 +239,7 @@ def fetch(packages, workspace, context, default_url):
     ignore_pkgs = Tools.list_all_ros_pkgs()
 
     already_fetched = set()
+    packages = set(packages)
 
     global_error_code = Downloader.NO_ERROR
 
@@ -259,6 +260,12 @@ def fetch(packages, workspace, context, default_url):
                 package_folder = path.join(ws_path, package_path)
                 deps_to_fetch.update(parser.get_dependencies(package_folder))
                 already_fetched.add(package.name)
+                for new_dep_name in deps_to_fetch.keys():
+                    # make sure we don't stop until we analyzed all
+                    # dependencies as we have just added these repositories
+                    # we must analyze their dependencies too even if we wanted
+                    # to download dependencies for one project only.
+                    packages.add(new_dep_name)
         try:
             downloader = Downloader(ws_path, available_pkgs, ignore_pkgs)
         except ValueError as e:
