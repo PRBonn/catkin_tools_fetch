@@ -33,8 +33,8 @@ class Updater(object):
 
         Args:
             ws_path (str): Path to the workspace
-            packages (TYPE): Description
-            conflict_strategy (TYPE): Description
+            packages (dict(str)): Dictionary of packages to be downloaded
+            conflict_strategy (str): A strategy to handle conflicts
         """
         super(Updater, self).__init__()
         self.ws_path = ws_path
@@ -45,7 +45,7 @@ class Updater(object):
         """Filter the packages based on user input.
 
         Args:
-            selected_packages (str[]): List of pacakges picker by the user.
+            selected_packages (str[]): List of package names picked by the user
 
         Returns:
             dict: A dictionary of packages that match selected_packages.

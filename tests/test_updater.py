@@ -1,8 +1,31 @@
+"""Test the updater."""
 import unittest
 import shutil
 import tempfile
+from unittest.mock import MagicMock, PropertyMock
 from catkin_tools_fetch.lib.update import Updater
 from catkin_tools_fetch.lib.tools import GitBridge
+
+
+def generate_mock_packages(size):
+    """Generate a list of mock packages.
+
+    Args:
+        size (int): Number of packages to generate.
+
+    Returns:
+        str[]: list of generated packages
+        dict(folder, pkg): dictionary of packages with mock folder as key
+    """
+    mock_list = []
+    mock_dict = {}
+    for i in range(size):
+        mock_list.append(MagicMock())
+        name = "pkg_{}".format(i)
+        folder = "folder_{}".format(i)
+        type(mock_list[i]).name = PropertyMock(return_value=name)
+        mock_dict[folder] = mock_list[i]
+    return mock_list, mock_dict
 
 
 class TestUpdater(unittest.TestCase):
@@ -15,6 +38,46 @@ class TestUpdater(unittest.TestCase):
     def tearDown(self):
         """Remove the directory after the test."""
         shutil.rmtree(self.test_dir)
+
+    def test_init(self):
+        """Test initialization of the updater."""
+        ws_path = self.test_dir
+        packages = {
+            "test_folder": "package_dummy"
+        }
+        conflict_strategy = "abort"
+        updater = Updater(ws_path, packages, conflict_strategy)
+        self.assertEquals(ws_path, updater.ws_path)
+        self.assertEquals(packages, updater.packages)
+        self.assertEquals(conflict_strategy, updater.conflict_strategy)
+
+    def test_filter_packages(self):
+        """Test filtering of packages."""
+        ws_path = self.test_dir
+        mock_list, all_packages = generate_mock_packages(3)
+        selected_packages = [mock_list[0].name, mock_list[2].name]
+        conflict_strategy = "abort"
+        updater = Updater(ws_path, all_packages, conflict_strategy)
+        filtered_packages = updater.filter_packages(selected_packages)
+        expected_packages = {
+            "folder_0": mock_list[0],
+            "folder_2": mock_list[2],
+        }
+        self.assertEquals(expected_packages, filtered_packages)
+
+    def test_filter_packages_none(self):
+        """Test filtering of packages when nothing is given."""
+        ws_path = self.test_dir
+        all_packages = {
+            "folder_1": "package_dummy_1",
+            "folder_2": "package_dummy_2",
+            "folder_3": "package_dummy_3",
+        }
+        selected_packages = None
+        conflict_strategy = "abort"
+        updater = Updater(ws_path, all_packages, conflict_strategy)
+        filtered_packages = updater.filter_packages(selected_packages)
+        self.assertEquals(all_packages, filtered_packages)
 
     def test_tag_from_output(self):
         """Test getting a tag from a pull output."""
@@ -30,3 +93,12 @@ class TestUpdater(unittest.TestCase):
 Automatic merge failed; fix conflicts and then commit the result."""
         tag = Updater.tag_from_output(output)
         self.assertEqual(tag, Updater.CONFLICT_TAG)
+
+    def test_merge_success(self):
+        """Check that we can parse successful pull output."""
+        output = """From github.com:niosus/catkin_tools_fetch
+ * branch            master     -> FETCH_HEAD
+Already up-to-date.
+"""
+        tag = Updater.tag_from_output(output)
+        self.assertEqual(tag, Updater.UP_TO_DATE_TAG)
