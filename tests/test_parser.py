@@ -1,6 +1,6 @@
 import unittest
 from os import path
-from catkin_tools_fetch.fetcher.dependency_parser import Parser
+from catkin_tools_fetch.lib.dependency_parser import Parser
 
 
 class TestParser(unittest.TestCase):

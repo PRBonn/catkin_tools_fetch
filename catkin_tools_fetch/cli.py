@@ -7,6 +7,7 @@ Attributes:
 import sys
 import logging
 from os import path
+from argparse import ArgumentParser
 
 try:
     from catkin_pkg.packages import find_packages
@@ -20,12 +21,14 @@ except ImportError as e:
 from catkin_tools.argument_parsing import add_context_args
 from catkin_tools.context import Context
 
-from catkin_tools_fetch.fetcher.dependency_parser import Parser
-from catkin_tools_fetch.fetcher.downloader import Downloader
-from catkin_tools_fetch.fetcher.tools import Tools
+from catkin_tools_fetch.lib.dependency_parser import Parser
+from catkin_tools_fetch.lib.downloader import Downloader
+from catkin_tools_fetch.lib.tools import Tools
+from catkin_tools_fetch.lib.update import Updater
+from catkin_tools_fetch.lib.update import Strategy
 
 logging.basicConfig()
-log = logging.getLogger('fetch')
+log = logging.getLogger('deps')
 
 
 def prepare_arguments(parser):
@@ -60,9 +63,6 @@ def prepare_arguments(parser):
     config_group.add_argument(
         '--default_url', default="{package}",
         help='Where to look for packages by default.')
-    config_group.add_argument(
-        '--update', '-u', action='store_true', default=False,
-        help='Update the dependencies to latest version.')
 
     # Behavior
     behavior_group = parser.add_argument_group(
@@ -71,6 +71,79 @@ def prepare_arguments(parser):
     add('--verbose', '-v', action='store_true', default=False,
         help='Print output from commands.')
 
+    return parser
+
+
+def prepare_arguments_deps(parser):
+    """Parse arguments that belong to this verb.
+
+    Args:
+        parser (argparser): Argument parser
+
+    Returns:
+        argparser: Parser that knows about our flags.
+    """
+    parser.description = """ Manage dependencies for one or more packages in
+        a catkin workspace. This reads dependencies from package.xml file of
+        each of the packages in the workspace and tries to download their
+        sources from version control system of choice."""
+    add_context_args(parser)
+
+    parent_parser = ArgumentParser(add_help=False)
+
+    # add config flags to all groups that need it
+    parent_parser.add_argument(
+        '--default_url', default="{package}",
+        help='Where to look for packages by default.')
+
+    # Behavior
+    parent_parser.add_argument('--verbose', '-v',
+                               action='store_true',
+                               default=False,
+                               help='Print output from commands.')
+
+    packages_help_msg = """
+        Packages for which the dependencies are analyzed.
+        If no packages are given, all packages are processed."""
+
+    # we need subparsers for this verb
+    subparsers = parser.add_subparsers(dest='subverb', help="Possible verbs.")
+
+    # add a parser for update sub-verb
+    update_help_msg = """
+        Update the existing repositories to their latest state from remote."""
+    parser_update = subparsers.add_parser(
+        'update', help=update_help_msg, parents=[parent_parser])
+    config_update_group = parser_update.add_argument_group('Config')
+    conflict_help_msg = """ When we pull a git repository there can be
+        conflicts. We need to resolve them in some way. You can pick this here.
+        By default the plugin will use '%(default)s' strategy."""
+    config_update_group.add_argument('--on-conflict', '-r',
+                                     choices=Strategy.list_all(),
+                                     default=Strategy.IGNORE,
+                                     help=conflict_help_msg)
+
+    update_pkg_group = parser_update.add_argument_group(
+        'Packages',
+        'Control for which packages we update dependencies.')
+    update_pkg_group.add_argument('packages',
+                                  metavar='PKGNAME',
+                                  nargs='*',
+                                  help=packages_help_msg)
+
+    # add a parser for fetch sub-verb
+    fetch_help_msg = """
+        Fetch the dependencies stored package.xml files."""
+    parser_fetch = subparsers.add_parser('fetch',
+                                         help=fetch_help_msg,
+                                         parents=[parent_parser])
+    fetch_group = parser_fetch.add_argument_group(
+        'Packages',
+        'Control for which packages we fetch dependencies.')
+    fetch_group.add_argument('packages',
+                             metavar='PKGNAME',
+                             nargs='*',
+                             help=packages_help_msg)
     return parser
 
 
@@ -92,18 +165,41 @@ def main(opts):
 
     context = Context.load(opts.workspace, opts.profile, opts, append=True)
     default_url = Tools.prepare_default_url(opts.default_url)
-
     if not opts.workspace:
         log.critical(" Workspace undefined! Abort!")
         return 1
-    if opts.update:
-        log.error(" Sorry, 'update' not implemented yet, but is planned.")
-        return 1
-    if opts.verb == 'fetch':
+    if opts.subverb == 'update':
+        return update(packages=opts.packages,
+                      workspace=opts.workspace,
+                      context=context,
+                      default_url=default_url,
+                      conflict_strategy=opts.on_conflict)
+    if opts.verb == 'fetch' or opts.subverb == 'fetch':
         return fetch(packages=opts.packages,
                      workspace=opts.workspace,
                      context=context,
                      default_url=default_url)
+
+
+def update(packages, workspace, context, default_url, conflict_strategy):
+    """Update packages from the available remotes.
+
+    Args:
+        packages (list): A list of packages provided by the user.
+        workspace (str): Path to a workspace (without src/ in the end).
+        context (Context): Current context. Needed to find current packages.
+        default_url (str): A default url with a {package} placeholder in it.
+
+    Returns:
+        int: Return code. 0 if success. Git error code otherwise.
+    """
+    ws_path = path.join(workspace, 'src')
+    workspace_packages = find_packages(context.source_space_abs,
+                                       exclude_subspaces=True,
+                                       warnings=[])
+    updater = Updater(ws_path, workspace_packages, conflict_strategy)
+    updater.update_packages(packages)
+    return 0
 
 
 def fetch(packages, workspace, context, default_url):
@@ -129,7 +225,7 @@ def fetch(packages, workspace, context, default_url):
 
     global_error_code = Downloader.NO_ERROR
 
-    # loop until there are still any new dependencies left to download
+    # loop until there are no new dependencies left to download
     while(True):
         log.info(" Searching for dependencies.")
         deps_to_fetch = {}

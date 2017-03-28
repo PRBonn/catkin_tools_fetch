@@ -8,9 +8,9 @@ import logging
 from os import path
 from xml.dom import minidom
 
-from catkin_tools_fetch.fetcher.tools import Tools
+from catkin_tools_fetch.lib.tools import Tools
 
-log = logging.getLogger('fetch')
+log = logging.getLogger('deps')
 
 
 class Parser(object):

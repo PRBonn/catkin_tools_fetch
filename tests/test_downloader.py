@@ -1,27 +1,22 @@
 import unittest
 import tempfile
 from os import path
-from catkin_tools_fetch.fetcher.downloader import Downloader
+from catkin_tools_fetch.lib.downloader import Downloader
 
 
 class TestDownloader(unittest.TestCase):
+    """Test downloader class."""
 
     def test_init_empty(self):
+        """Test that initialization is empty."""
         ws_path = path.join(path.dirname(__file__), 'data')
         downloader = Downloader(ws_path, [], [])
         self.assertEqual(downloader.ws_path, ws_path)
         self.assertEqual(downloader.available_pkgs, [])
         self.assertEqual(downloader.ignore_pkgs, [])
 
-    def test_repository_exists(self):
-        http_url = "https://github.com/niosus/catkin_tools_fetch"
-        self.assertTrue(Downloader.repository_exists(http_url))
-
-        wrong_url = "https://github.com/niosus"
-        self.assertFalse(Downloader.repository_exists(wrong_url))
-        self.assertFalse(Downloader.repository_exists(""))
-
     def test_download_dependencies_simple(self):
+        """Test simple dependencies downloader."""
         temp_dir = tempfile.mkdtemp("_ws", "temp_")
         downloader = Downloader(temp_dir, [], [])
         dep_dict = {"fetch": "https://github.com/niosus/catkin_tools_fetch"}
@@ -32,6 +27,7 @@ class TestDownloader(unittest.TestCase):
         self.assertTrue(path.exists(expected_path))
 
     def test_download_dependencies_again(self):
+        """Test that downloading them again breaks nothing."""
         temp_dir = tempfile.mkdtemp("_ws", "temp_")
         downloader = Downloader(temp_dir, [], [])
         dep_dict = {"fetch": "https://github.com/niosus/catkin_tools_fetch"}
@@ -43,6 +39,7 @@ class TestDownloader(unittest.TestCase):
         self.assertTrue(path.exists(expected_path))
 
     def test_no_download_for_ros_deps(self):
+        """Test that we skip ROS packages."""
         temp_dir = tempfile.mkdtemp("_ws", "no_ros_")
         downloader = Downloader(temp_dir, [], [])
         dep_dict = {
@@ -55,6 +52,7 @@ class TestDownloader(unittest.TestCase):
         self.assertFalse(path.exists(expected_path))
 
     def test_no_download_for_wrong_link(self):
+        """Test that we download nothing for a wrong link."""
         temp_dir = tempfile.mkdtemp("_ws", "no_ros_")
         downloader = Downloader(temp_dir, [], [])
         dep_dict = {"fetch": "wrong_link"}
@@ -63,6 +61,7 @@ class TestDownloader(unittest.TestCase):
         self.assertFalse(path.exists(expected_path))
 
     def test_init_death(self):
+        """Test death when init is wrong."""
         try:
             Downloader("blah", [], [])
             self.fail()
@@ -70,6 +69,7 @@ class TestDownloader(unittest.TestCase):
             self.assertTrue(isinstance(e, ValueError))
 
     def test_download_dependencies_death(self):
+        """Test that we throw an exception for wrong input dict."""
         temp_dir = tempfile.mkdtemp("_ws", "temp_")
         downloader = Downloader(temp_dir, [], [])
         not_a_dict = {"not", "a dictionary"}

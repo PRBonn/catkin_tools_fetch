@@ -10,6 +10,7 @@ from setuptools.command.install import install
 install_requires = [
     'catkin-pkg > 0.2.9',
     'catkin_tools >= 0.4.2',
+    'mock',
     'setuptools',
 ]
 if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
@@ -37,7 +38,7 @@ class PermissiveInstall(install):
                 os.chmod(file, mode)
 
 
-version_str = '0.0.7'
+version_str = '0.0.8'
 github_url = 'https://github.com/niosus/catkin_tools_fetch'
 
 setup(
@@ -68,6 +69,8 @@ the packages found inside the catkin workspace.
     entry_points={
         'catkin_tools.commands.catkin.verbs': [
             'fetch = catkin_tools_fetch:description',
+            'deps = catkin_tools_fetch:description_deps',
+            'dependencies = catkin_tools_fetch:description_deps',
         ],
     },
     cmdclass={'install': PermissiveInstall},

@@ -5,8 +5,103 @@ Attributes:
 """
 import subprocess
 import logging
+import re
 
-log = logging.getLogger('fetch')
+log = logging.getLogger('deps')
+
+
+class GitBridge(object):
+    """A bridge to git and its cmd functions."""
+
+    STATUS_CMD = "git status --porcelain --branch"
+    PULL_CMD_MASK = "git pull origin {branch}"
+
+    CHECK_CMD_MASK = "git ls-remote {url}"
+    CLONE_CMD_MASK = "git clone --recursive {url} {path}"
+
+    BRANCH_REGEX = re.compile("## (?!HEAD)([\w\-_]+)")
+
+    EXISTS_TAG = "[ALREADY EXISTS]"
+    CLONED_TAG = "[CLONED]"
+    ERROR_TAG = "[ERROR]"
+
+    @staticmethod
+    def status(repo_folder):
+        """Get output from `git pull --porcelain --branch` for a repo."""
+        output = subprocess.check_output(GitBridge.STATUS_CMD,
+                                         stderr=subprocess.STDOUT,
+                                         shell=True,
+                                         cwd=repo_folder)
+        branch = GitBridge.get_branch_name(output)
+        # when no changes - output is single line with name of branch
+        has_changes = False
+        if output.count(b'\n') > 1:
+            has_changes = True
+        return output, branch, has_changes
+
+    @staticmethod
+    def pull(repo_folder, branch):
+        """Pull the repo's branch and return the output."""
+        git_pull_cmd = GitBridge.PULL_CMD_MASK.format(branch=branch)
+        output = subprocess.check_output(git_pull_cmd,
+                                         stderr=subprocess.STDOUT,
+                                         shell=True,
+                                         cwd=repo_folder)
+        return output
+
+    @staticmethod
+    def clone(url, clone_path):
+        """Clone the repo from url into clone_path."""
+        cmd_clone = GitBridge.CLONE_CMD_MASK.format(url=url, path=clone_path)
+        try:
+            subprocess.check_output(cmd_clone,
+                                    stderr=subprocess.STDOUT,
+                                    shell=True)
+            return GitBridge.CLONED_TAG
+        except subprocess.CalledProcessError as e:
+            out_str = e.output.decode("utf8")
+            print(out_str)
+            log.debug(" Clone output: %s", out_str)
+            if "already exists" in out_str:
+                return GitBridge.EXISTS_TAG
+            return GitBridge.ERROR_TAG
+
+    @staticmethod
+    def repository_exists(url):
+        """Check if repository exists.
+
+        Uses `git ls-remote` to check if the repository exists.
+
+        Args:
+            url (str): Url to check.
+
+        Returns:
+            bool: True if exists, False otherwise
+        """
+        if url == "":
+            return False
+        git_cmd = GitBridge.CHECK_CMD_MASK.format(url=url)
+        try:
+            subprocess.check_call(git_cmd,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE,
+                                  shell=True)
+            return True
+        except subprocess.CalledProcessError:
+            return False
+
+    @staticmethod
+    def get_branch_name(git_status_output):
+        """Parse branch name from the output of git status."""
+        try:
+            output = git_status_output.decode("utf-8")
+        except AttributeError:
+            output = git_status_output
+        match = GitBridge.BRANCH_REGEX.match(output)
+        if not match:
+            return None
+        branch = match.groups()[0]
+        return branch
 
 
 class Tools(object):
@@ -55,8 +150,11 @@ class Tools(object):
                 get_ros_packages_command,
                 stderr=subprocess.STDOUT,
                 shell=True)
-            output = str(output)
-            output = output.splitlines()
+            try:
+                str_output = output.decode("utf-8")
+            except AttributeError:
+                str_output = output
+            output = str_output.splitlines()
             for pkg_line in output:
                 pkg_list.append(pkg_line.split(' ')[0])
             log.info(" [ROS]: Ignoring %s packages.", len(pkg_list))

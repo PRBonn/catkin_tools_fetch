@@ -8,7 +8,8 @@
 Defines a new verb `fetch` for
 [catkin_tools](https://github.com/catkin/catkin_tools). This verb is
 responsible for downloading external dependencies of the projects in a `catkin`
-workspace. For now only git is supported. The tool is under heavy development.
+workspace. For now only `git` is supported. The tool is under heavy
+development. Please use PyPI or download a tag for stable version.
 
 ## How to install ##
 This package installs a new verb. You need to have `catkin_tools` installed.
@@ -19,9 +20,13 @@ Currently the easiest way to install this verb is from `PyPI`:
 
 ## How to use ##
 Should be used from a catkin workspace as follows:
-
 ```
-catkin fetch --default_url YOUR_DEFAULT_URL
+catkin dependencies fetch --default_url YOUR_DEFAULT_URL
+```
+
+or
+```
+catkin deps fetch --default_url YOUR_DEFAULT_URL
 ```
 
 This command will look inside the `src/` folder of the current catkin workspace
