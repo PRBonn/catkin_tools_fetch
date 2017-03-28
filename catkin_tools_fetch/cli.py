@@ -168,17 +168,34 @@ def main(opts):
     if not opts.workspace:
         log.critical(" Workspace undefined! Abort!")
         return 1
+    if opts.verb == 'fetch' or opts.subverb == 'fetch':
+        if opts.verb == 'fetch':
+            msg = """
+############################# DEPRECATED ###################################
+You are using an old deprecated command: `catkin fetch`.
+Please use the new command instead:
+
+                `catkin fetch` --> `catkin deps fetch`
+
+It has the same interface. The old command will be removed in future.
+############################################################################
+            """
+            log.warning(msg)
+            seconds_to_sleep = 5
+            log.info(" Showing deprecation banner for %s seconds.",
+                     seconds_to_sleep)
+            from time import sleep
+            sleep(seconds_to_sleep)
+        return fetch(packages=opts.packages,
+                     workspace=opts.workspace,
+                     context=context,
+                     default_url=default_url)
     if opts.subverb == 'update':
         return update(packages=opts.packages,
                       workspace=opts.workspace,
                       context=context,
                       default_url=default_url,
                       conflict_strategy=opts.on_conflict)
-    if opts.verb == 'fetch' or opts.subverb == 'fetch':
-        return fetch(packages=opts.packages,
-                     workspace=opts.workspace,
-                     context=context,
-                     default_url=default_url)
 
 
 def update(packages, workspace, context, default_url, conflict_strategy):
