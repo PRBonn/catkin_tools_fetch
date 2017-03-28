@@ -10,7 +10,7 @@ from setuptools.command.install import install
 install_requires = [
     'catkin-pkg > 0.2.9',
     'catkin_tools >= 0.4.2',
-    'mock >= 2.0.0',
+    'mock',
     'setuptools',
 ]
 if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
