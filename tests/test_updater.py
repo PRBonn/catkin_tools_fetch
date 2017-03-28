@@ -4,6 +4,7 @@ import shutil
 import tempfile
 from mock import MagicMock, PropertyMock
 from catkin_tools_fetch.lib.update import Updater
+from catkin_tools_fetch.lib.update import Strategy
 from catkin_tools_fetch.lib.tools import GitBridge
 
 
@@ -118,3 +119,9 @@ Already up-to-date.
         self.assertEquals(len(status_msgs), 1)
         self.assertEquals(status_msgs[0][0], "pkg")
         self.assertEquals(status_msgs[0][1], Updater.UP_TO_DATE_TAG)
+
+    def test_list_strategies(self):
+        """Test the list of all strategies."""
+        expected = set([Strategy.IGNORE, Strategy.ABORT, Strategy.STASH])
+        actual = set(Strategy.list_all())
+        self.assertEquals(len(expected.symmetric_difference(actual)), 0)

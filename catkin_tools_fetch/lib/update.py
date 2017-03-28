@@ -70,13 +70,15 @@ class Updater(object):
         log.info(" Pulling packages:")
         packages = self.filter_packages(selected_packages)
         status_msgs = []
+        # some helpful vars
+        abort_on_conflict = self.conflict_strategy == Strategy.ABORT
+        # stash_on_conflict = self.conflict_strategy == Strategy.STASH
         for ws_folder, package in packages.items():
             log_func = log.info
             picked_tag = None
             folder = path.join(self.ws_path, ws_folder)
             output, branch, has_changes = GitBridge.status(folder)
             if has_changes:
-                log_func = log.info
                 picked_tag = Updater.CHANGES_TAG
             else:
                 try:
@@ -91,6 +93,11 @@ class Updater(object):
             # now show the results to the user
             status_msgs.append((package.name, picked_tag))
             log_func("  %-21s: %s", Tools.decorate(package.name), picked_tag)
+
+            # abort if the user wants it
+            if abort_on_conflict and log_func == log.warning:
+                log.info(" Abort due to picked strategy: '%s'", Strategy.ABORT)
+                break
         return status_msgs
 
     @staticmethod
@@ -105,3 +112,19 @@ class Updater(object):
         if Updater.CONFLICT_MSG in str_output:
             return Updater.CONFLICT_TAG
         return Updater.PULLED_TAG
+
+
+class Strategy(object):
+    """An enum of stategies for update."""
+
+    IGNORE = 'ignore'
+    ABORT = 'abort'
+    STASH = 'stash'
+
+    @classmethod
+    def list_all(cls):
+        """List all strategies."""
+        all_strategies = [val for key, val in cls.__dict__.items()
+                          if not callable(getattr(cls, key))
+                          and not key.startswith("__")]
+        return all_strategies

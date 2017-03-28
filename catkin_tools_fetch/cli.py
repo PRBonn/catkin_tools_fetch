@@ -25,6 +25,7 @@ from catkin_tools_fetch.lib.dependency_parser import Parser
 from catkin_tools_fetch.lib.downloader import Downloader
 from catkin_tools_fetch.lib.tools import Tools
 from catkin_tools_fetch.lib.update import Updater
+from catkin_tools_fetch.lib.update import Strategy
 
 logging.basicConfig()
 log = logging.getLogger('deps')
@@ -118,8 +119,8 @@ def prepare_arguments_deps(parser):
         conflicts. We need to resolve them in some way. You can pick this here.
         By default the plugin will '%(default)s'."""
     config_update_group.add_argument('--on-conflict', '-r',
-                                     choices=['abort', 'stash', 'reset'],
-                                     default='abort',
+                                     choices=Strategy.list_all(),
+                                     default=Strategy.IGNORE,
                                      help=conflict_help_msg)
 
     update_pkg_group = parser_update.add_argument_group(
