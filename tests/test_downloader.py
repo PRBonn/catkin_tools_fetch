@@ -1,11 +1,22 @@
+"""Test downloading of the dependencies."""
 import unittest
 import tempfile
+import shutil
 from os import path
 from catkin_tools_fetch.lib.downloader import Downloader
+from catkin_tools_fetch.lib.dependency_parser import Dependency
 
 
 class TestDownloader(unittest.TestCase):
     """Test downloader class."""
+
+    def setUp(self):
+        """Create a temporary directory."""
+        self.test_dir = tempfile.mkdtemp("_ws", "temp_")
+
+    def tearDown(self):
+        """Remove the directory after the test."""
+        shutil.rmtree(self.test_dir)
 
     def test_init_empty(self):
         """Test that initialization is empty."""
@@ -17,47 +28,62 @@ class TestDownloader(unittest.TestCase):
 
     def test_download_dependencies_simple(self):
         """Test simple dependencies downloader."""
-        temp_dir = tempfile.mkdtemp("_ws", "temp_")
-        downloader = Downloader(temp_dir, [], [])
-        dep_dict = {"fetch": "https://github.com/niosus/catkin_tools_fetch"}
+        downloader = Downloader(self.test_dir, [], [])
+        dependency = Dependency(
+            name="fetch",
+            url="https://github.com/niosus/catkin_tools_fetch")
+        dep_dict = {"fetch": dependency}
         downloader.download_dependencies(dep_dict)
-        expected_path = path.join(temp_dir,
+        expected_path = path.join(self.test_dir,
                                   'fetch',
                                   'README.md')
         self.assertTrue(path.exists(expected_path))
 
     def test_download_dependencies_again(self):
         """Test that downloading them again breaks nothing."""
-        temp_dir = tempfile.mkdtemp("_ws", "temp_")
-        downloader = Downloader(temp_dir, [], [])
-        dep_dict = {"fetch": "https://github.com/niosus/catkin_tools_fetch"}
+        downloader = Downloader(self.test_dir, [], [])
+        dependency = Dependency(
+            name="fetch",
+            url="https://github.com/niosus/catkin_tools_fetch")
+        dep_dict = {"fetch": dependency}
         downloader.download_dependencies(dep_dict)
         downloader.download_dependencies(dep_dict)
-        expected_path = path.join(temp_dir,
+        expected_path = path.join(self.test_dir,
                                   'fetch',
                                   'README.md')
         self.assertTrue(path.exists(expected_path))
 
     def test_no_download_for_ros_deps(self):
         """Test that we skip ROS packages."""
-        temp_dir = tempfile.mkdtemp("_ws", "no_ros_")
-        downloader = Downloader(temp_dir, [], [])
-        dep_dict = {
-            "roscpp": "irrelevant_link",
-            "std_msgs": "irrelevant_link"}
+        downloader = Downloader(self.test_dir, [], [])
+        roscpp_dep = Dependency(name="roscpp", url="irrelevant_link")
+        std_msgs_dep = Dependency(name="std_msgs", url="irrelevant_link")
+        dep_dict = {"roscpp": roscpp_dep, "std_msgs": std_msgs_dep}
         downloader.download_dependencies(dep_dict)
-        expected_path = path.join(temp_dir, 'roscpp')
+        expected_path = path.join(self.test_dir, 'roscpp')
         self.assertFalse(path.exists(expected_path))
-        expected_path = path.join(temp_dir, 'std_msgs')
+        expected_path = path.join(self.test_dir, 'std_msgs')
         self.assertFalse(path.exists(expected_path))
 
     def test_no_download_for_wrong_link(self):
         """Test that we download nothing for a wrong link."""
-        temp_dir = tempfile.mkdtemp("_ws", "no_ros_")
-        downloader = Downloader(temp_dir, [], [])
-        dep_dict = {"fetch": "wrong_link"}
+        downloader = Downloader(self.test_dir, [], [])
+        dependency = Dependency(name="fetch", url="wrong_link")
+        dep_dict = {"fetch": dependency}
         downloader.download_dependencies(dep_dict)
-        expected_path = path.join(temp_dir, 'fetch')
+        expected_path = path.join(self.test_dir, 'fetch')
+        self.assertFalse(path.exists(expected_path))
+
+    def test_no_download_for_wrong_branch(self):
+        """Test that we download nothing for a wrong branch."""
+        downloader = Downloader(self.test_dir, [], [])
+        dependency = Dependency(
+            name="fetch",
+            url="https://github.com/niosus/catkin_tools_fetch",
+            branch="blahblah")
+        dep_dict = {"fetch": dependency}
+        downloader.download_dependencies(dep_dict)
+        expected_path = path.join(self.test_dir, 'fetch')
         self.assertFalse(path.exists(expected_path))
 
     def test_init_death(self):
@@ -70,8 +96,7 @@ class TestDownloader(unittest.TestCase):
 
     def test_download_dependencies_death(self):
         """Test that we throw an exception for wrong input dict."""
-        temp_dir = tempfile.mkdtemp("_ws", "temp_")
-        downloader = Downloader(temp_dir, [], [])
+        downloader = Downloader(self.test_dir, [], [])
         not_a_dict = {"not", "a dictionary"}
         self.assertRaises(ValueError,
                           downloader.download_dependencies,

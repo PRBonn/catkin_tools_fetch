@@ -17,12 +17,12 @@ class GitBridge(object):
     PULL_CMD_MASK = "git pull origin {branch}"
 
     CHECK_CMD_MASK = "git ls-remote {url}"
-    CLONE_CMD_MASK = "git clone --recursive {url} {path}"
+    CLONE_CMD_MASK = "git clone --recursive --branch {branch} {url} {path}"
 
     BRANCH_REGEX = re.compile("## (?!HEAD)([\w\-_]+)")
 
     EXISTS_TAG = "[ALREADY EXISTS]"
-    CLONED_TAG = "[CLONED]"
+    CLONED_TAG = "[CLONED] [BRANCH: '{branch}']"
     ERROR_TAG = "[ERROR]"
 
     @staticmethod
@@ -50,14 +50,16 @@ class GitBridge(object):
         return output
 
     @staticmethod
-    def clone(url, clone_path):
+    def clone(url, clone_path, branch="master"):
         """Clone the repo from url into clone_path."""
-        cmd_clone = GitBridge.CLONE_CMD_MASK.format(url=url, path=clone_path)
+        cmd_clone = GitBridge.CLONE_CMD_MASK.format(url=url,
+                                                    path=clone_path,
+                                                    branch=branch)
         try:
             subprocess.check_output(cmd_clone,
                                     stderr=subprocess.STDOUT,
                                     shell=True)
-            return GitBridge.CLONED_TAG
+            return GitBridge.CLONED_TAG.format(branch=branch)
         except subprocess.CalledProcessError as e:
             out_str = e.output.decode("utf8")
             print(out_str)

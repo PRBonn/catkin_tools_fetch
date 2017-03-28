@@ -1,3 +1,4 @@
+"""Module that contains tests for various tools."""
 import unittest
 from catkin_tools_fetch.lib.tools import Tools
 

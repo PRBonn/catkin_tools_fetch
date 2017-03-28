@@ -1,3 +1,4 @@
+"""Module that contains flake8 tests."""
 import os
 import subprocess
 

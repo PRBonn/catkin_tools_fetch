@@ -1,3 +1,4 @@
+"""Module for testing the git bridge."""
 import unittest
 import os
 import shutil
@@ -20,7 +21,7 @@ class TestGitBridge(unittest.TestCase):
         """Test that git status gives us branch and status."""
         http_url = "https://github.com/niosus/catkin_tools_fetch"
         result = GitBridge.clone(http_url, self.test_dir)
-        self.assertEqual(result, GitBridge.CLONED_TAG)
+        self.assertEqual(result, GitBridge.CLONED_TAG.format(branch="master"))
         output, branch, has_changes = GitBridge.status(self.test_dir)
         expected_output = b"## master...origin/master\n"
         self.assertEqual(output, expected_output)
@@ -43,7 +44,7 @@ class TestGitBridge(unittest.TestCase):
         self.assertEqual(result, GitBridge.ERROR_TAG)
         http_url = "https://github.com/niosus/catkin_tools_fetch"
         result = GitBridge.clone(http_url, self.test_dir)
-        self.assertEqual(result, GitBridge.CLONED_TAG)
+        self.assertEqual(result, GitBridge.CLONED_TAG.format(branch="master"))
         result = GitBridge.clone(http_url, ".")
         self.assertEqual(result, GitBridge.EXISTS_TAG)
 

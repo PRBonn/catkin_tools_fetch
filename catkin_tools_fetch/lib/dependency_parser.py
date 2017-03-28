@@ -13,6 +13,20 @@ from catkin_tools_fetch.lib.tools import Tools
 log = logging.getLogger('deps')
 
 
+class Dependency(object):
+    """Incapsulate a single dependency here."""
+
+    def __init__(self, name, url=None, branch=None):
+        """Initialize a dependency.
+
+        Args:
+            name (str): Name of the dependee package
+        """
+        self.name = name
+        self.url = url
+        self.branch = branch
+
+
 class Parser(object):
     """Parses dependencies of a package.
 
@@ -49,24 +63,13 @@ class Parser(object):
             package_folder (str): A folder to search package.xml in.
 
         Returns:
-            dict: A dictionary with an url for each package name.
+            dict: A dictionary with a dependency for each package name.
         """
         path_to_xml = Parser.__get_package_xml_path(package_folder)
         if not path_to_xml:
             log.critical(" 'package.xml' not found for package [%s].",
                          self.pkg_name)
             return None
-        return self.__get_all_dependencies(path_to_xml)
-
-    def __get_all_dependencies(self, path_to_xml):
-        """Get a dictionary of all dependencies.
-
-        Args:
-            path_to_xml (str): Path to `package.xml` file.
-
-        Returns:
-            dict: Dictionary with an url for each dependency name.
-        """
         xmldoc = minidom.parse(path_to_xml)
         all_deps = []
         for tag in Parser.TAGS:
@@ -78,7 +81,7 @@ class Parser(object):
                  len(all_deps))
         log.debug(" Dependencies: %s", all_deps)
         deps_with_urls = self.__init_dep_dict(all_deps)
-        return Parser.__specify_explicit_urls(xmldoc, deps_with_urls)
+        return Parser.__update_explicit_values(xmldoc, deps_with_urls)
 
     @staticmethod
     def __fix_dependencies(deps, pkg_name):
@@ -101,24 +104,46 @@ class Parser(object):
         return fixed_deps
 
     @staticmethod
-    def __specify_explicit_urls(xmldoc, intial_dep_dict):
-        """Specify explicit urls instead of default ones.
+    def __update_explicit_values(xmldoc, dep_dict):
+        """Specify explicit values instead of default ones.
+
+        A user can define explicit values for each package in the <export> tag.
+        Values to be specified: url, branch.
+
+        This function reads the appropriate part of `package.xml` file and
+        replaces the default values with the ones it finds there.
 
         Args:
             xmldoc (minidom): Current xml object
-            intial_dep_dict (dict): A dict {name: url} with default urls.
+            dep_dict (dict): A dict {name: dep} with default deps.
 
         Returns:
-            dict: A dict with specific ursl parsed from <export> tags
+            dict: A dict with final dependencies parsed from <export> tags
         """
-        dep_dict = dict(intial_dep_dict)
         for url_tag in Parser.URL_TAGS:
             urls_node = xmldoc.getElementsByTagName(url_tag)
             for item in urls_node:
-                target = item.attributes['target'].value
-                url = item.attributes['url'].value
-                dep_dict[target] = url
+                target = Parser.__get_attr('target', item)
+                if not target:
+                    log.debug(" skip xml item: '%s'", item)
+                    continue
+                url = Parser.__get_attr('url', item)
+                if url:
+                    dep_dict[target].url = url
+                branch = Parser.__get_attr('branch', item)
+                if branch:
+                    dep_dict[target].branch = branch
         return dep_dict
+
+    @staticmethod
+    def __get_attr(attr_name, xml_item):
+        """Get attribute from xml item if possible."""
+        attr = None
+        try:
+            attr = xml_item.attributes[attr_name].value
+        except KeyError:
+            log.debug(" '%s' not found in xml item '%s'.", attr_name, xml_item)
+        return attr
 
     def __init_dep_dict(self, all_deps_list):
         """Initialize dependency dict with default values.
@@ -127,12 +152,13 @@ class Parser(object):
             all_deps_list (str[]): List of all dependencies.
 
         Returns:
-            dict: A dictionary {name: url} with default url for each dependency
+            dict: A dictionary {name: dep} with dependency objects
         """
         dep_dict = {}
-        for dependency in all_deps_list:
-            dep_dict[dependency] = self.__download_mask.format(
-                package=dependency)
+        for dep_name in all_deps_list:
+            url = self.__download_mask.format(package=dep_name)
+            dependency = Dependency(name=dep_name, url=url)
+            dep_dict[dep_name] = dependency
         return dep_dict
 
     @staticmethod
