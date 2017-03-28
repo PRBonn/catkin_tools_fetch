@@ -117,7 +117,7 @@ def prepare_arguments_deps(parser):
     config_update_group = parser_update.add_argument_group('Config')
     conflict_help_msg = """ When we pull a git repository there can be
         conflicts. We need to resolve them in some way. You can pick this here.
-        By default the plugin will '%(default)s'."""
+        By default the plugin will use '%(default)s' strategy."""
     config_update_group.add_argument('--on-conflict', '-r',
                                      choices=Strategy.list_all(),
                                      default=Strategy.IGNORE,

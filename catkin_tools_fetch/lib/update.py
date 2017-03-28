@@ -119,7 +119,7 @@ class Strategy(object):
 
     IGNORE = 'ignore'
     ABORT = 'abort'
-    STASH = 'stash'
+    # STASH = 'stash'
 
     @classmethod
     def list_all(cls):
