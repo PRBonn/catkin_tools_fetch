@@ -21,8 +21,9 @@ Currently the easiest way to install this verb is from `PyPI`:
 ```
 
 ## How to use ##
+Both available subverbs should be used after `dependencies` verb 
+(or its shorter version `deps`) from within of a catkin workspace.
 ### `fetch` ###
-Should be used from a catkin workspace as follows:
 ```
 catkin dependencies fetch --default_url YOUR_DEFAULT_URL
 ```
