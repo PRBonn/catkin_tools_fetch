@@ -27,11 +27,6 @@ Should be used from a catkin workspace as follows:
 catkin dependencies fetch --default_url YOUR_DEFAULT_URL
 ```
 
-or
-```
-catkin deps fetch --default_url YOUR_DEFAULT_URL
-```
-
 ### `update` ###
 ```
 catkin dependencies update
@@ -57,6 +52,11 @@ url to your package in git and `BRANCH_NAME` is the branch you want to
 checkout.
 
 Any of these can be skipped. The default will be used instead.
+
+## Misc ##
+You can always use `--help` flag to find out more about each command and arguments.
+
+You can also use a shorter version of the verb `deps` instead of a full verb `dependencies`.
 
 [codacy-img]: https://img.shields.io/codacy/grade/9c050cd8852046ae863c940b8409f9ea.svg?style=flat-square
 [codacy-coverage-img]: https://img.shields.io/codacy/coverage/9c050cd8852046ae863c940b8409f9ea.svg?style=flat-square
