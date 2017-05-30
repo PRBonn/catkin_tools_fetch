@@ -21,6 +21,7 @@ Currently the easiest way to install this verb is from `PyPI`:
 ```
 
 ## How to use ##
+### `fetch` ###
 Should be used from a catkin workspace as follows:
 ```
 catkin dependencies fetch --default_url YOUR_DEFAULT_URL
@@ -31,10 +32,16 @@ or
 catkin deps fetch --default_url YOUR_DEFAULT_URL
 ```
 
-This command will look inside the `src/` folder of the current catkin workspace
+### `update` ###
+```
+catkin dependencies update
+```
+
+This commands will look inside the `src/` folder of the current catkin workspace
 and will analyze the dependencies of `package.xml` files for each project in
-this workspace. It will then try to clone the packages looking for them under
-url: `YOUR_DEFAULT_URL/PACKAGE_NAME`.
+this workspace. Then `fetch` will try to clone the packages looking for them under
+url: `YOUR_DEFAULT_URL/PACKAGE_NAME`. The `update` subverb will try to pull any 
+changes from the server to any package in the workspace if there is no change locally.
 
 Additionaly, one can explicitly define a url or a branch for a dependency in
 `package.xml` file under `<export>` tag. For example:
