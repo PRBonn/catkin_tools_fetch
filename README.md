@@ -1,15 +1,17 @@
-# A "fetch" verb for catkin_tools
+# "fetch" and "update" your dependencies with catkin_tools
 
 [![PyPI][pypi-img]][pypi-link]
 [![Build Status][travis-img]][travis-link]
 [![Codacy Badge][codacy-img]][codacy-link]
 [![Codacy coverage][codacy-coverage-img]][codacy-coverage-link]
 
-Defines a new verb `fetch` for
-[catkin_tools](https://github.com/catkin/catkin_tools). This verb is
-responsible for downloading external dependencies of the projects in a `catkin`
-workspace. For now only `git` is supported. The tool is under heavy
-development. Please use PyPI or download a tag for stable version.
+Defines new verb `dependencies` (or in short `deps`) 
+and its sub-verbs `fetch` and `update` for
+[catkin_tools](https://github.com/catkin/catkin_tools). 
+This verb is responsible for downloading external dependencies 
+of the projects in a `catkin` workspace and keeping them up to date. 
+For now only `git` is supported. The tool is under heavy development. 
+Please use PyPI or download a tag for stable version.
 
 ## How to install ##
 This package installs a new verb. You need to have `catkin_tools` installed.
