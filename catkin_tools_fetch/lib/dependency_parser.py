@@ -9,6 +9,7 @@ from os import path
 from xml.dom import minidom
 
 from catkin_tools_fetch.lib.tools import Tools
+from catkin_tools_fetch.lib.printer import Printer
 
 log = logging.getLogger('deps')
 
@@ -55,6 +56,7 @@ class Parser(object):
                 '`download_mask` must contain a "{package}" placeholder.')
         self.__download_mask = download_mask
         self.pkg_name = pkg_name
+        self.printer = Printer()
 
     def get_dependencies(self, package_folder):
         """Find and parse package.xml file and return a dict of dependencies.
@@ -76,9 +78,9 @@ class Parser(object):
             deps = Parser.__node_to_list(xmldoc, tag)
             deps = Parser.__fix_dependencies(deps, self.pkg_name)
             all_deps += deps
-        log.info("  %-21s: Found %s dependencies.",
-                 Tools.decorate(self.pkg_name),
-                 len(all_deps))
+        msg = " {}: Found {} dependencies".format(
+            Tools.decorate(self.pkg_name), len(all_deps))
+        self.printer.print_msg(msg)
         log.debug(" Dependencies: %s", all_deps)
         deps_with_urls = self.__init_dep_dict(all_deps)
         return Parser.__update_explicit_values(xmldoc, deps_with_urls)

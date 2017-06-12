@@ -21,14 +21,14 @@ class TestDownloader(unittest.TestCase):
     def test_init_empty(self):
         """Test that initialization is empty."""
         ws_path = path.join(path.dirname(__file__), 'data')
-        downloader = Downloader(ws_path, [], [])
+        downloader = Downloader(ws_path, [], [], use_preprint=False)
         self.assertEqual(downloader.ws_path, ws_path)
         self.assertEqual(downloader.available_pkgs, [])
         self.assertEqual(downloader.ignore_pkgs, [])
 
     def test_download_dependencies_simple(self):
         """Test simple dependencies downloader."""
-        downloader = Downloader(self.test_dir, [], [])
+        downloader = Downloader(self.test_dir, [], [], use_preprint=False)
         dependency = Dependency(
             name="fetch",
             url="https://github.com/niosus/catkin_tools_fetch")
@@ -41,7 +41,7 @@ class TestDownloader(unittest.TestCase):
 
     def test_download_dependencies_again(self):
         """Test that downloading them again breaks nothing."""
-        downloader = Downloader(self.test_dir, [], [])
+        downloader = Downloader(self.test_dir, [], [], use_preprint=False)
         dependency = Dependency(
             name="fetch",
             url="https://github.com/niosus/catkin_tools_fetch")
@@ -55,7 +55,7 @@ class TestDownloader(unittest.TestCase):
 
     def test_no_download_for_ros_deps(self):
         """Test that we skip ROS packages."""
-        downloader = Downloader(self.test_dir, [], [])
+        downloader = Downloader(self.test_dir, [], [], use_preprint=False)
         roscpp_dep = Dependency(name="roscpp", url="irrelevant_link")
         std_msgs_dep = Dependency(name="std_msgs", url="irrelevant_link")
         dep_dict = {"roscpp": roscpp_dep, "std_msgs": std_msgs_dep}
@@ -67,7 +67,7 @@ class TestDownloader(unittest.TestCase):
 
     def test_no_download_for_wrong_link(self):
         """Test that we download nothing for a wrong link."""
-        downloader = Downloader(self.test_dir, [], [])
+        downloader = Downloader(self.test_dir, [], [], use_preprint=False)
         dependency = Dependency(name="fetch", url="wrong_link")
         dep_dict = {"fetch": dependency}
         downloader.download_dependencies(dep_dict)
@@ -76,7 +76,7 @@ class TestDownloader(unittest.TestCase):
 
     def test_no_download_for_wrong_branch(self):
         """Test that we download nothing for a wrong branch."""
-        downloader = Downloader(self.test_dir, [], [])
+        downloader = Downloader(self.test_dir, [], [], use_preprint=False)
         dependency = Dependency(
             name="fetch",
             url="https://github.com/niosus/catkin_tools_fetch",
@@ -89,14 +89,14 @@ class TestDownloader(unittest.TestCase):
     def test_init_death(self):
         """Test death when init is wrong."""
         try:
-            Downloader("blah", [], [])
+            Downloader("blah", [], [], use_preprint=False)
             self.fail()
         except ValueError as e:
             self.assertTrue(isinstance(e, ValueError))
 
     def test_download_dependencies_death(self):
         """Test that we throw an exception for wrong input dict."""
-        downloader = Downloader(self.test_dir, [], [])
+        downloader = Downloader(self.test_dir, [], [], use_preprint=False)
         not_a_dict = {"not", "a dictionary"}
         self.assertRaises(ValueError,
                           downloader.download_dependencies,

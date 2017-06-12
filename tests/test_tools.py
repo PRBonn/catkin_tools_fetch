@@ -25,7 +25,7 @@ class TestTools(unittest.TestCase):
 
     def test_decorate(self):
         """Test how we decorate something."""
-        self.assertEqual('[blah]', Tools.decorate('blah'))
+        self.assertEqual('[blah]'.ljust(25), Tools.decorate('blah'))
 
     def test_default_ros_pkgs(self):
         """Test that we actually remove the default ros packages from list."""

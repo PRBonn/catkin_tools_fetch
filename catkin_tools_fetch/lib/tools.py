@@ -7,6 +7,8 @@ import subprocess
 import logging
 import re
 
+from termcolor import colored
+
 log = logging.getLogger('deps')
 
 
@@ -21,9 +23,9 @@ class GitBridge(object):
 
     BRANCH_REGEX = re.compile("## (?!HEAD)([\w\-_]+)")
 
-    EXISTS_TAG = "[ALREADY EXISTS]"
-    CLONED_TAG = "[CLONED] [BRANCH: '{branch}']"
-    ERROR_TAG = "[ERROR]"
+    EXISTS_TAG = colored("[ALREADY EXISTS]", "green")
+    CLONED_TAG = colored("[CLONED]", "green") + " [BRANCH: '{branch}']"
+    ERROR_TAG = colored("[ERROR]", "red")
 
     @staticmethod
     def status(repo_folder):
@@ -50,7 +52,7 @@ class GitBridge(object):
         return output
 
     @staticmethod
-    def clone(url, clone_path, branch="master"):
+    def clone(name, url, clone_path, branch="master"):
         """Clone the repo from url into clone_path."""
         cmd_clone = GitBridge.CLONE_CMD_MASK.format(url=url,
                                                     path=clone_path,
@@ -59,17 +61,16 @@ class GitBridge(object):
             subprocess.check_output(cmd_clone,
                                     stderr=subprocess.STDOUT,
                                     shell=True)
-            return GitBridge.CLONED_TAG.format(branch=branch)
+            return name, GitBridge.CLONED_TAG.format(branch=branch)
         except subprocess.CalledProcessError as e:
             out_str = e.output.decode("utf8")
-            print(out_str)
-            log.debug(" Clone output: %s", out_str)
             if "already exists" in out_str:
-                return GitBridge.EXISTS_TAG
-            return GitBridge.ERROR_TAG
+                return name, GitBridge.EXISTS_TAG
+            log.critical("Git error: %s", out_str)
+            return name, GitBridge.ERROR_TAG
 
     @staticmethod
-    def repository_exists(url):
+    def repository_exists(dependency):
         """Check if repository exists.
 
         Uses `git ls-remote` to check if the repository exists.
@@ -80,17 +81,17 @@ class GitBridge(object):
         Returns:
             bool: True if exists, False otherwise
         """
-        if url == "":
-            return False
-        git_cmd = GitBridge.CHECK_CMD_MASK.format(url=url)
+        if dependency.url == "":
+            return dependency, False
+        git_cmd = GitBridge.CHECK_CMD_MASK.format(url=dependency.url)
         try:
             subprocess.check_call(git_cmd,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE,
                                   shell=True)
-            return True
+            return dependency, True
         except subprocess.CalledProcessError:
-            return False
+            return dependency, False
 
     @staticmethod
     def get_branch_name(git_status_output):
@@ -166,9 +167,10 @@ class Tools(object):
             return set(Tools.default_ros_packages)
 
     @staticmethod
-    def decorate(pkg_name):
+    def decorate(pkg_name, max_width=25):
         """Decorate a package name."""
-        return "[" + pkg_name + "]"
+        decorated = "[" + pkg_name + "]"
+        return decorated.ljust(max_width)
 
     default_ros_packages = ['actionlib',
                             'actionlib_msgs',

@@ -2,6 +2,7 @@
 import unittest
 import shutil
 import tempfile
+from termcolor import colored
 from mock import MagicMock, PropertyMock
 from catkin_tools_fetch.lib.update import Updater
 from catkin_tools_fetch.lib.update import Strategy
@@ -83,7 +84,8 @@ class TestUpdater(unittest.TestCase):
     def test_tag_from_output(self):
         """Test getting a tag from a pull output."""
         http_url = "https://github.com/niosus/catkin_tools_fetch"
-        output = GitBridge.clone(http_url, self.test_dir)
+        _, output = GitBridge.clone(
+            "catkin_tools_fetch", http_url, self.test_dir)
         output = GitBridge.pull(self.test_dir, "master")
         tag = Updater.tag_from_output(output)
         self.assertEqual(tag, Updater.UP_TO_DATE_TAG)
@@ -107,7 +109,7 @@ Already up-to-date.
     def test_update_full_simple(self):
         """Test updater end to end on single repo."""
         http_url = "https://github.com/niosus/catkin_tools_fetch"
-        GitBridge.clone(http_url, self.test_dir)
+        GitBridge.clone("fetch", http_url, self.test_dir)
         pkg = MagicMock()
         type(pkg).name = PropertyMock(return_value="pkg")
         packages = {
@@ -118,7 +120,8 @@ Already up-to-date.
         status_msgs = updater.update_packages(selected_packages)
         self.assertEquals(len(status_msgs), 1)
         self.assertEquals(status_msgs[0][0], "pkg")
-        self.assertEquals(status_msgs[0][1], Updater.UP_TO_DATE_TAG)
+        self.assertEquals(status_msgs[0][1], colored(
+            Updater.UP_TO_DATE_TAG, "green"))
 
     def test_list_strategies(self):
         """Test the list of all strategies."""

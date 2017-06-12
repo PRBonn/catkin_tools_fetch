@@ -6,9 +6,12 @@ Attributes:
 import logging
 import subprocess
 from os import path
+from termcolor import colored
+from concurrent import futures
 
 from catkin_tools_fetch.lib.tools import Tools
 from catkin_tools_fetch.lib.tools import GitBridge
+from catkin_tools_fetch.lib.printer import Printer
 
 log = logging.getLogger('deps')
 
@@ -21,6 +24,7 @@ class Updater(object):
     OK_TAGS = [PULLED_TAG, UP_TO_DATE_TAG]
 
     CHANGES_TAG = "[UNCOMMITTED CHANGES]"
+    RUNNING_TAG = "[RUNNING]"
     NO_TRACK_TAG = "[NO BRANCH]"
     ERROR_TAG = "[GIT ERROR]"
     CONFLICT_TAG = "[MERGE CONFLICT]"
@@ -28,7 +32,13 @@ class Updater(object):
     UP_TO_DATE_MSG = "Already up-to-date"
     CONFLICT_MSG = "Automatic merge failed"
 
-    def __init__(self, ws_path, packages, conflict_strategy):
+    def __init__(self,
+                 ws_path,
+                 packages,
+                 conflict_strategy,
+                 use_preprint=True,
+                 colored=True,
+                 num_threads=4):
         """Initialize the updater.
 
         Args:
@@ -40,6 +50,10 @@ class Updater(object):
         self.ws_path = ws_path
         self.packages = packages
         self.conflict_strategy = conflict_strategy
+        self.thread_pool = futures.ThreadPoolExecutor(max_workers=num_threads)
+        self.printer = Printer()
+        self.colored = colored
+        self.use_preprint = use_preprint
 
     def filter_packages(self, selected_packages):
         """Filter the packages based on user input.
@@ -58,6 +72,22 @@ class Updater(object):
                 filtered_packages[ws_folder] = package
         return filtered_packages
 
+    def pick_tag(self, folder, package):
+        """Pick result tag for a folder."""
+        if self.use_preprint:
+            msg = " {}: {}".format(Tools.decorate(
+                package.name), Updater.RUNNING_TAG)
+            self.printer.add_msg(package.name, msg)
+        output, branch, has_changes = GitBridge.status(folder)
+        if has_changes:
+            return package, Updater.CHANGES_TAG
+        try:
+            output = GitBridge.pull(folder, branch)
+            return package, Updater.tag_from_output(output)
+        except subprocess.CalledProcessError as e:
+            log.debug(" git pull returned error: %s", e)
+            return package, Updater.ERROR_TAG
+
     def update_packages(self, selected_packages):
         """Update all the folders to match the remote. Considers the branch.
 
@@ -70,34 +100,21 @@ class Updater(object):
         log.info(" Pulling packages:")
         packages = self.filter_packages(selected_packages)
         status_msgs = []
-        # some helpful vars
-        abort_on_conflict = self.conflict_strategy == Strategy.ABORT
-        # stash_on_conflict = self.conflict_strategy == Strategy.STASH
+        futures_list = []
         for ws_folder, package in packages.items():
-            log_func = log.info
             picked_tag = None
             folder = path.join(self.ws_path, ws_folder)
-            output, branch, has_changes = GitBridge.status(folder)
-            if has_changes:
-                picked_tag = Updater.CHANGES_TAG
-            else:
-                try:
-                    output = GitBridge.pull(folder, branch)
-                    picked_tag = Updater.tag_from_output(output)
-                except subprocess.CalledProcessError as e:
-                    picked_tag = Updater.ERROR_TAG
-                    log.debug(" git pull returned error: %s", e)
+            futures_list.append(
+                self.thread_pool.submit(self.pick_tag, folder, package))
+        for future in futures.as_completed(futures_list):
+            package, picked_tag = future.result()
             # change logger for warning if something is wrong
-            if picked_tag not in Updater.OK_TAGS:
-                log_func = log.warning
+            if self.colored:
+                picked_tag = Updater.colorize_tag(picked_tag)
             # now show the results to the user
             status_msgs.append((package.name, picked_tag))
-            log_func("  %-21s: %s", Tools.decorate(package.name), picked_tag)
-
-            # abort if the user wants it
-            if abort_on_conflict and log_func == log.warning:
-                log.info(" Abort due to picked strategy: '%s'", Strategy.ABORT)
-                break
+            msg = " {}: {}".format(Tools.decorate(package.name), picked_tag)
+            self.printer.purge_msg(package.name, msg)
         return status_msgs
 
     @staticmethod
@@ -112,6 +129,17 @@ class Updater(object):
         if Updater.CONFLICT_MSG in str_output:
             return Updater.CONFLICT_TAG
         return Updater.PULLED_TAG
+
+    @staticmethod
+    def colorize_tag(picked_tag):
+        """Colorize the tag."""
+        if picked_tag in Updater.OK_TAGS:
+            return colored(picked_tag, 'green')
+
+        if picked_tag == Updater.CHANGES_TAG:
+            # this is a warning
+            return colored(picked_tag, 'yellow')
+        return colored(picked_tag, 'red')
 
 
 class Strategy(object):

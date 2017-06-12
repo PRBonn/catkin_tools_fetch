@@ -1,3 +1,4 @@
+"""Setup module for catkin_tools_fetch."""
 import os
 import sys
 from stat import ST_MODE
@@ -6,12 +7,15 @@ from setuptools import setup
 from setuptools import find_packages
 from setuptools.command.install import install
 
+version_str = '0.2.0'
+
 # Setup installation dependencies
 install_requires = [
     'catkin-pkg > 0.2.9',
     'catkin_tools >= 0.4.2',
     'mock',
     'setuptools',
+    'termcolor'
 ]
 if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
     install_requires.append('argparse')
@@ -28,7 +32,10 @@ osx_resources_path = os.path.join(
 
 
 class PermissiveInstall(install):
+    """A class for permissive install."""
+
     def run(self):
+        """Run the install procedure."""
         install.run(self)
         if os.name == 'posix':
             for file in self.get_outputs():
@@ -38,7 +45,6 @@ class PermissiveInstall(install):
                 os.chmod(file, mode)
 
 
-version_str = '0.1.0'
 github_url = 'https://github.com/niosus/catkin_tools_fetch'
 
 setup(
@@ -60,11 +66,11 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
     ],
-    description="A new verb 'fetch' for catkin_tools",
-    long_description="""
-Provides a new verb 'fetch' for catkin_tools. Allows fetching dependencies of
-the packages found inside the catkin workspace.
-""",
+    description="""A new verb 'dependencies' to manage project dependencies with
+catkin_tools""",
+    long_description="""Provides a new verb 'dependencies' or 'deps' for
+catkin_tools. Allows fetching dependencies of the packages found inside the
+catkin workspace and updating all the packages to the final state.""",
     test_suite='tests',
     entry_points={
         'catkin_tools.commands.catkin.verbs': [

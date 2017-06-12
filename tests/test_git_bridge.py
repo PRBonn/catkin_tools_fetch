@@ -4,6 +4,7 @@ import os
 import shutil
 import tempfile
 from catkin_tools_fetch.lib.tools import GitBridge
+from catkin_tools_fetch.lib.dependency_parser import Dependency
 
 
 class TestGitBridge(unittest.TestCase):
@@ -20,7 +21,8 @@ class TestGitBridge(unittest.TestCase):
     def test_status(self):
         """Test that git status gives us branch and status."""
         http_url = "https://github.com/niosus/catkin_tools_fetch"
-        result = GitBridge.clone(http_url, self.test_dir)
+        name, result = GitBridge.clone("test", http_url, self.test_dir)
+        self.assertEqual(name, "test")
         self.assertEqual(result, GitBridge.CLONED_TAG.format(branch="master"))
         output, branch, has_changes = GitBridge.status(self.test_dir)
         expected_output = b"## master...origin/master\n"
@@ -40,18 +42,20 @@ class TestGitBridge(unittest.TestCase):
     def test_clone(self):
         """Test if cloning works as expected."""
         wrong_url = "https://github.com/niosus"
-        result = GitBridge.clone(wrong_url, self.test_dir)
+        name, result = GitBridge.clone("name", wrong_url, self.test_dir)
+        self.assertEqual(name, "name")
         self.assertEqual(result, GitBridge.ERROR_TAG)
         http_url = "https://github.com/niosus/catkin_tools_fetch"
-        result = GitBridge.clone(http_url, self.test_dir)
+        _, result = GitBridge.clone("", http_url, self.test_dir)
         self.assertEqual(result, GitBridge.CLONED_TAG.format(branch="master"))
-        result = GitBridge.clone(http_url, ".")
+        _, result = GitBridge.clone("", http_url, ".")
         self.assertEqual(result, GitBridge.EXISTS_TAG)
 
     def test_pull(self):
         """Test pulling a repository."""
         http_url = "https://github.com/niosus/catkin_tools_fetch"
-        output = GitBridge.clone(http_url, self.test_dir)
+        _, output = GitBridge.clone(
+            "catkin_tools_fetch", http_url, self.test_dir)
         output = GitBridge.pull(self.test_dir, "master")
         expected_msg = b"""From https://github.com/niosus/catkin_tools_fetch
  * branch            master     -> FETCH_HEAD
@@ -62,11 +66,18 @@ Already up-to-date.
     def test_repository_exists(self):
         """Test behavior if repository exists."""
         http_url = "https://github.com/niosus/catkin_tools_fetch"
-        self.assertTrue(GitBridge.repository_exists(http_url))
+        dependency = Dependency(name='test', url=http_url)
+        dep_res, exists = GitBridge.repository_exists(dependency)
+        self.assertTrue(exists)
+        self.assertEqual(dep_res.name, dependency.name)
 
         wrong_url = "https://github.com/niosus"
-        self.assertFalse(GitBridge.repository_exists(wrong_url))
-        self.assertFalse(GitBridge.repository_exists(""))
+        dependency = Dependency(name='test', url=wrong_url)
+        dep_res, exists = GitBridge.repository_exists(dependency)
+        self.assertFalse(exists)
+        dependency = Dependency(name='empty', url='')
+        dep_res, exists = GitBridge.repository_exists(dependency)
+        self.assertFalse(exists)
 
     def test_get_branch_name(self):
         """Test getting the branch name."""

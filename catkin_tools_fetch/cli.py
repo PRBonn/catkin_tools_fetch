@@ -63,6 +63,12 @@ def prepare_arguments(parser):
     config_group.add_argument(
         '--default_url', default="{package}",
         help='Where to look for packages by default.')
+    config_group.add_argument('--no_status', action='store_true',
+                              help='Do not use progress status when cloning.')
+    config_group.add_argument('--num_threads', '-j',
+                              type=int,
+                              default=4,
+                              help='Number of threads run in parallel.')
 
     # Behavior
     behavior_group = parser.add_argument_group(
@@ -101,6 +107,14 @@ def prepare_arguments_deps(parser):
                                action='store_true',
                                default=False,
                                help='Print output from commands.')
+    parent_parser.add_argument('--no_status',
+                               action='store_true',
+                               default=False,
+                               help='Do not use progress status when cloning.')
+    parent_parser.add_argument('--num_threads', '-j',
+                               type=int,
+                               default=4,
+                               help='Number of threads run in parallel.')
 
     packages_help_msg = """
         Packages for which the dependencies are analyzed.
@@ -144,6 +158,7 @@ def prepare_arguments_deps(parser):
                              metavar='PKGNAME',
                              nargs='*',
                              help=packages_help_msg)
+
     return parser
 
 
@@ -162,6 +177,15 @@ def main(opts):
         log.debug(" Enabling DEBUG output.")
     else:
         log.setLevel(logging.getLevelName("INFO"))
+
+    if opts.no_status:
+        log.info(" Not printing status messages while cloning.")
+        use_preprint = False
+    else:
+        log.info(" Will print status messages while cloning.")
+        use_preprint = True
+
+    log.info(" Using %s threads.", opts.num_threads)
 
     context = Context.load(opts.workspace, opts.profile, opts, append=True)
     default_url = Tools.prepare_default_url(opts.default_url)
@@ -189,16 +213,26 @@ It has the same interface. The old command will be removed in future.
         return fetch(packages=opts.packages,
                      workspace=opts.workspace,
                      context=context,
-                     default_url=default_url)
+                     default_url=default_url,
+                     use_preprint=use_preprint,
+                     num_threads=opts.num_threads)
     if opts.subverb == 'update':
         return update(packages=opts.packages,
                       workspace=opts.workspace,
                       context=context,
                       default_url=default_url,
-                      conflict_strategy=opts.on_conflict)
+                      conflict_strategy=opts.on_conflict,
+                      use_preprint=use_preprint,
+                      num_threads=opts.num_threads)
 
 
-def update(packages, workspace, context, default_url, conflict_strategy):
+def update(packages,
+           workspace,
+           context,
+           default_url,
+           conflict_strategy,
+           use_preprint,
+           num_threads):
     """Update packages from the available remotes.
 
     Args:
@@ -206,6 +240,7 @@ def update(packages, workspace, context, default_url, conflict_strategy):
         workspace (str): Path to a workspace (without src/ in the end).
         context (Context): Current context. Needed to find current packages.
         default_url (str): A default url with a {package} placeholder in it.
+        use_preprint (bool): Show status messages while cloning
 
     Returns:
         int: Return code. 0 if success. Git error code otherwise.
@@ -214,12 +249,21 @@ def update(packages, workspace, context, default_url, conflict_strategy):
     workspace_packages = find_packages(context.source_space_abs,
                                        exclude_subspaces=True,
                                        warnings=[])
-    updater = Updater(ws_path, workspace_packages, conflict_strategy)
+    updater = Updater(ws_path=ws_path,
+                      packages=workspace_packages,
+                      conflict_strategy=conflict_strategy,
+                      use_preprint=use_preprint,
+                      num_threads=num_threads)
     updater.update_packages(packages)
     return 0
 
 
-def fetch(packages, workspace, context, default_url):
+def fetch(packages,
+          workspace,
+          context,
+          default_url,
+          use_preprint,
+          num_threads):
     """Fetch dependencies of a package.
 
     Args:
@@ -227,6 +271,7 @@ def fetch(packages, workspace, context, default_url):
         workspace (str): Path to a workspace (without src/ in the end).
         context (Context): Current context. Needed to find current packages.
         default_url (str): A default url with a {package} placeholder in it.
+        use_preprint (bool): Show status messages while cloning
 
     Returns:
         int: Return code. 0 if success. Git error code otherwise.
@@ -267,7 +312,11 @@ def fetch(packages, workspace, context, default_url):
                     # to download dependencies for one project only.
                     packages.add(new_dep_name)
         try:
-            downloader = Downloader(ws_path, available_pkgs, ignore_pkgs)
+            downloader = Downloader(ws_path=ws_path,
+                                    available_pkgs=available_pkgs,
+                                    ignore_pkgs=ignore_pkgs,
+                                    use_preprint=use_preprint,
+                                    num_threads=num_threads)
         except ValueError as e:
             log.critical(" Encountered error. Abort.")
             log.critical(" Error message: %s", e.message)
