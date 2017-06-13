@@ -303,7 +303,10 @@ def fetch(packages,
             if fetch_all or (package.name in packages):
                 parser = Parser(default_url, package.name)
                 package_folder = path.join(ws_path, package_path)
-                deps_to_fetch.update(parser.get_dependencies(package_folder))
+                deps_to_fetch = Tools.update_deps_dict(
+                    deps_to_fetch, parser.get_dependencies(package_folder))
+                if not deps_to_fetch:
+                    sys.exit(1)
                 already_fetched.add(package.name)
                 for new_dep_name in deps_to_fetch.keys():
                     # make sure we don't stop until we analyzed all

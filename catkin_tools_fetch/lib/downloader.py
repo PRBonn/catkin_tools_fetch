@@ -69,6 +69,8 @@ class Downloader(object):
         """
         if not isinstance(dep_dict, dict):
             raise ValueError("expected a dictionary with dependencies.")
+        for dep in dep_dict.values():
+            log.debug(" dep before: %s", dep)
         checked_deps = self.__check_dependencies(dep_dict)
         return self.__clone_dependencies(checked_deps)
 
@@ -99,6 +101,7 @@ class Downloader(object):
         for name, dependency in checked_deps.items():
             url = dependency.url
             branch = dependency.branch
+            log.debug(" prepare clone: url: %s, branch: %s", url, branch)
             if not branch:
                 branch = "master"
             if name in self.available_pkgs:
@@ -146,6 +149,7 @@ class Downloader(object):
         futures_list = []
         log.info(" Checking merged dependencies:")
         for dependency in dep_dict.values():
+            log.debug(" check dep: %s", dependency)
             if dependency.name in self.ignore_pkgs:
                 msg = " {}: {}".format(
                     Tools.decorate(dependency.name), Downloader.IGNORE_TAG)

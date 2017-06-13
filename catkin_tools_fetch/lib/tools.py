@@ -57,6 +57,7 @@ class GitBridge(object):
         cmd_clone = GitBridge.CLONE_CMD_MASK.format(url=url,
                                                     path=clone_path,
                                                     branch=branch)
+        log.debug(" clone url: %s", cmd_clone)
         try:
             subprocess.check_output(cmd_clone,
                                     stderr=subprocess.STDOUT,
@@ -171,6 +172,31 @@ class Tools(object):
         """Decorate a package name."""
         decorated = "[" + pkg_name + "]"
         return decorated.ljust(max_width)
+
+    @staticmethod
+    def update_deps_dict(base_dict, new_dict):
+        """We don't want to overwrite any value, but check for conflicts."""
+        for dep_name in new_dict.keys():
+            dep = new_dict[dep_name]
+            if dep_name in base_dict:
+                old_dep = base_dict[dep_name]
+                if not old_dep.branch or old_dep.branch == 'None':
+                    old_dep.branch = dep.branch
+                if dep.branch \
+                        and dep.branch != 'None' \
+                        and dep.branch != old_dep.branch:
+                    log.critical(
+                        " Dependency '%s': conflicting branches: '%s' vs '%s'",
+                        dep_name, dep.branch, old_dep.branch)
+                    return None
+                if dep.url != old_dep.url:
+                    log.critical(
+                        " Dependency '%s': conflicting urls: '%s' vs '%s'",
+                        dep_name, dep.url, old_dep.url)
+                    return None
+            else:
+                base_dict[dep_name] = dep
+        return base_dict
 
     default_ros_packages = ['actionlib',
                             'actionlib_msgs',

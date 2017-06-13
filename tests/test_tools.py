@@ -1,6 +1,7 @@
 """Module that contains tests for various tools."""
 import unittest
 from catkin_tools_fetch.lib.tools import Tools
+from catkin_tools_fetch.lib.dependency_parser import Dependency
 
 
 class TestTools(unittest.TestCase):
@@ -33,3 +34,16 @@ class TestTools(unittest.TestCase):
         diff = pkgs.symmetric_difference(Tools.default_ros_packages)
         print(diff)
         self.assertTrue(len(diff) < 100)
+
+    def test_update_deps(self):
+        """Test that we can update the dictionary."""
+        old_dict = {'test': Dependency(name='test')}
+        new_dict = {
+            'test2': Dependency(name='test2'),
+            'test': Dependency(name='test', branch='blah')
+        }
+        updated_dict = Tools.update_deps_dict(old_dict, new_dict)
+        self.assertTrue('test' in updated_dict)
+        self.assertTrue('test2' in updated_dict)
+        self.assertEqual('blah', updated_dict['test'].branch)
+        pass

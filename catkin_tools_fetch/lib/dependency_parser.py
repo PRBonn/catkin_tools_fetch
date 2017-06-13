@@ -27,6 +27,11 @@ class Dependency(object):
         self.url = url
         self.branch = branch
 
+    def __repr__(self):
+        """Show how to print it."""
+        return "name: '{}', branch: '{}', url: '{}'".format(
+            self.name, self.branch, self.url)
+
 
 class Parser(object):
     """Parses dependencies of a package.
@@ -129,12 +134,16 @@ class Parser(object):
                 if not target:
                     log.debug(" skip xml item: '%s'", item)
                     continue
+                log.debug(" read target:'%s'", target)
                 url = Parser.__get_attr('url', item)
                 if url:
                     dep_dict[target].url = url
+                    log.debug(" target url:'%s'", url)
                 branch = Parser.__get_attr('branch', item)
                 if branch:
                     dep_dict[target].branch = branch
+                    log.debug(" target branch:'%s'", branch)
+                log.debug(" updated dependency: %s", dep_dict[target])
         return dep_dict
 
     @staticmethod
