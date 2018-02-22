@@ -58,10 +58,8 @@ class TestGitBridge(unittest.TestCase):
             "catkin_tools_fetch", http_url, self.test_dir)
         output = GitBridge.pull(self.test_dir, "master")
         expected_msg = b"""From https://github.com/niosus/catkin_tools_fetch
- * branch            master     -> FETCH_HEAD
-Already up-to-date.
-"""
-        self.assertEqual(expected_msg, output)
+ * branch            master     -> FETCH_HEAD"""
+        self.assertTrue(output.startswith(expected_msg))
 
     def test_repository_exists(self):
         """Test behavior if repository exists."""

@@ -29,7 +29,7 @@ class Updater(object):
     ERROR_TAG = "[GIT ERROR]"
     CONFLICT_TAG = "[MERGE CONFLICT]"
 
-    UP_TO_DATE_MSG = "Already up-to-date"
+    UP_TO_DATE_MSG = "Already up"
     CONFLICT_MSG = "Automatic merge failed"
 
     def __init__(self,

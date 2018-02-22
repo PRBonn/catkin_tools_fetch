@@ -44,7 +44,7 @@ class Parser(object):
     """
 
     XML_FILE_NAME = "package.xml"
-    TAGS = ["build_depend"]
+    TAGS = ["build_depend", "depend"]
     URL_TAGS = ["git_url"]
 
     def __init__(self, download_mask, pkg_name):
