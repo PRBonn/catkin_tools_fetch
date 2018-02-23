@@ -2,9 +2,12 @@
 import unittest
 import os
 import shutil
+import logging
 import tempfile
 from catkin_tools_fetch.lib.tools import GitBridge
 from catkin_tools_fetch.lib.dependency_parser import Dependency
+
+log = logging.getLogger('deps')
 
 
 class TestGitBridge(unittest.TestCase):

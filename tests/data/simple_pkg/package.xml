@@ -13,6 +13,8 @@
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
+    <git_url target="all" url="http_link_default_1"/>
+    <git_url target="all" url="http_link_default_2"/>
     <git_url target="dep_1" url="http_link" />
     <git_url target="dep_2" url="git_link" branch="dev" />
   </export>

@@ -31,55 +31,6 @@ logging.basicConfig()
 log = logging.getLogger('deps')
 
 
-def prepare_arguments(parser):
-    """Parse arguments that belong to this verb.
-
-    Args:
-        parser (argparser): Argument parser
-
-    Returns:
-        argparser: Parser that knows about our flags.
-    """
-    parser.description = """ Download dependencies for one or more packages in
-        a catkin workspace. This reads dependencies from package.xml file of
-        each of the packages in the workspace and tries to download their
-        sources from version control system of choice."""
-    add_context_args(parser)
-
-    packages_help_msg = """
-        Packages for which the dependencies are analyzed.
-        If no packages are given, all packages are processed."""
-    fetch_group = parser.add_argument_group(
-        'Packages',
-        'Control for which packages we fetch dependencies.')
-
-    fetch_group.add_argument('packages',
-                             metavar='PKGNAME',
-                             nargs='*',
-                             help=packages_help_msg)
-
-    # add config flags to all groups that need it
-    config_group = parser.add_argument_group('Config')
-    config_group.add_argument(
-        '--default_url', default="{package}",
-        help='Where to look for packages by default.')
-    config_group.add_argument('--no_status', action='store_true',
-                              help='Do not use progress status when cloning.')
-    config_group.add_argument('--num_threads', '-j',
-                              type=int,
-                              default=4,
-                              help='Number of threads run in parallel.')
-
-    # Behavior
-    behavior_group = parser.add_argument_group(
-        'Interface', 'The behavior of the command-line interface.')
-    add = behavior_group.add_argument
-    add('--verbose', '-v', action='store_true', default=False,
-        help='Print output from commands.')
-
-    return parser
-
-
 def prepare_arguments_deps(parser):
     """Parse arguments that belong to this verb.
 
@@ -100,7 +51,10 @@ def prepare_arguments_deps(parser):
     # add config flags to all groups that need it
     parent_parser.add_argument(
         '--default_url', default="{package}",
-        help='Where to look for packages by default.')
+        help='[deprecated] Where to look for packages by default.')
+    parent_parser.add_argument(
+        '--default_urls', default="{package}",
+        help='A comma separated list of urls where to look for packages at.')
 
     # Behavior
     parent_parser.add_argument('--verbose', '-v',
@@ -163,7 +117,7 @@ def prepare_arguments_deps(parser):
 
 
 def main(opts):
-    """Main function for fetch verb.
+    """Run the script.
 
     Args:
         opts (dict): Options populated by an arg parser.
@@ -188,39 +142,24 @@ def main(opts):
     log.info(" Using %s threads.", opts.num_threads)
 
     context = Context.load(opts.workspace, opts.profile, opts, append=True)
-    default_url = Tools.prepare_default_url(opts.default_url)
+    if opts.default_url != Tools.PACKAGE_TAG:
+        opts.default_urls += "," + opts.default_url
+    # Prepare the set of default urls
+    default_urls = Tools.prepare_default_urls(opts.default_urls)
     if not opts.workspace:
         log.critical(" Workspace undefined! Abort!")
         return 1
     if opts.verb == 'fetch' or opts.subverb == 'fetch':
-        if opts.verb == 'fetch':
-            msg = """
-############################# DEPRECATED ###################################
-You are using an old deprecated command: `catkin fetch`.
-Please use the new command instead:
-
-                `catkin fetch` --> `catkin deps fetch`
-
-It has the same interface. The old command will be removed in future.
-############################################################################
-            """
-            log.warning(msg)
-            seconds_to_sleep = 5
-            log.info(" Showing deprecation banner for %s seconds.",
-                     seconds_to_sleep)
-            from time import sleep
-            sleep(seconds_to_sleep)
         return fetch(packages=opts.packages,
                      workspace=opts.workspace,
                      context=context,
-                     default_url=default_url,
+                     default_urls=default_urls,
                      use_preprint=use_preprint,
                      num_threads=opts.num_threads)
     if opts.subverb == 'update':
         return update(packages=opts.packages,
                       workspace=opts.workspace,
                       context=context,
-                      default_url=default_url,
                       conflict_strategy=opts.on_conflict,
                       use_preprint=use_preprint,
                       num_threads=opts.num_threads)
@@ -229,7 +168,6 @@ It has the same interface. The old command will be removed in future.
 def update(packages,
            workspace,
            context,
-           default_url,
            conflict_strategy,
            use_preprint,
            num_threads):
@@ -239,7 +177,6 @@ def update(packages,
         packages (list): A list of packages provided by the user.
         workspace (str): Path to a workspace (without src/ in the end).
         context (Context): Current context. Needed to find current packages.
-        default_url (str): A default url with a {package} placeholder in it.
         use_preprint (bool): Show status messages while cloning
 
     Returns:
@@ -261,7 +198,7 @@ def update(packages,
 def fetch(packages,
           workspace,
           context,
-          default_url,
+          default_urls,
           use_preprint,
           num_threads):
     """Fetch dependencies of a package.
@@ -270,7 +207,7 @@ def fetch(packages,
         packages (list): A list of packages provided by the user.
         workspace (str): Path to a workspace (without src/ in the end).
         context (Context): Current context. Needed to find current packages.
-        default_url (str): A default url with a {package} placeholder in it.
+        default_urls (set(str)): A set of urls where we search for packages.
         use_preprint (bool): Show status messages while cloning
 
     Returns:
@@ -301,7 +238,8 @@ def fetch(packages,
             if package.name in already_fetched:
                 continue
             if fetch_all or (package.name in packages):
-                parser = Parser(default_url, package.name)
+                parser = Parser(default_urls=default_urls,
+                                pkg_name=package.name)
                 package_folder = path.join(ws_path, package_path)
                 deps_to_fetch = Tools.update_deps_dict(
                     deps_to_fetch, parser.get_dependencies(package_folder))
@@ -314,6 +252,8 @@ def fetch(packages,
                     # we must analyze their dependencies too even if we wanted
                     # to download dependencies for one project only.
                     packages.add(new_dep_name)
+                # Update default url to use the new version of it further on.
+                default_urls.update(parser.default_urls)
         try:
             downloader = Downloader(ws_path=ws_path,
                                     available_pkgs=available_pkgs,

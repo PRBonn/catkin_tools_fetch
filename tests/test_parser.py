@@ -1,8 +1,11 @@
 """Module to test the parser and dependencies."""
 import unittest
+import logging
 from os import path
 from catkin_tools_fetch.lib.dependency_parser import Parser
 from catkin_tools_fetch.lib.dependency_parser import Dependency
+
+log = logging.getLogger('deps')
 
 
 class TestParser(unittest.TestCase):
@@ -10,7 +13,7 @@ class TestParser(unittest.TestCase):
 
     def test_init(self):
         """Initialize the parser."""
-        parser = Parser("blah_{package}", "pkg_name")
+        parser = Parser(set(["blah_{package}"]), "pkg_name")
         self.assertEqual(Parser.XML_FILE_NAME, "package.xml")
         self.assertTrue("build_depend" in Parser.TAGS)
         self.assertEqual(parser.pkg_name, "pkg_name")
@@ -18,7 +21,7 @@ class TestParser(unittest.TestCase):
     def test_init_death(self):
         """Test that wrong initialization fails."""
         try:
-            Parser("blah", "pkg_name")
+            Parser(["blah"], "pkg_name")
             self.fail()
         except ValueError as e:
             self.assertTrue(isinstance(e, ValueError))
@@ -26,7 +29,7 @@ class TestParser(unittest.TestCase):
     def test_get_dependencies(self):
         """Test that parsing dependencies works."""
         pkg_folder = path.join(path.dirname(__file__), "data", "simple_pkg")
-        parser = Parser("link_default/{package}", "simple_pkg")
+        parser = Parser(set(["{package}"]), "simple_pkg")
         deps = parser.get_dependencies(pkg_folder)
         self.assertIn("dep_1", deps)
         self.assertIn("dep_2", deps)
@@ -41,7 +44,9 @@ class TestParser(unittest.TestCase):
         self.assertEqual(deps["dep_2"].branch, "dev")
 
         self.assertEqual(deps["dep_3"].name, "dep_3")
-        self.assertEqual(deps["dep_3"].url, "link_default/dep_3")
+        self.assertTrue(deps["dep_3"].url is None)
+        self.assertIn("http_link_default_1/dep_3", deps["dep_3"].default_urls)
+        self.assertIn("http_link_default_2/dep_3", deps["dep_3"].default_urls)
         self.assertIsNone(deps["dep_3"].branch)
 
 

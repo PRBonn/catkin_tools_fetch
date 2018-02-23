@@ -27,6 +27,7 @@ class Downloader(object):
 
     IGNORE_TAG = colored("[IGNORED]", 'yellow')
     NOT_FOUND_TAG = colored("[NOT FOUND]", 'red')
+    FOUND_TAG = colored("[FOUND]", 'green') + ': '
     CLONING_TAG = "[CLONING]"
     CHECKING_TAG = "[CHECKING]"
 
@@ -149,19 +150,17 @@ class Downloader(object):
         futures_list = []
         log.info(" Checking merged dependencies:")
         for dependency in dep_dict.values():
-            log.debug(" check dep: %s", dependency)
+            log.debug(" Check dependency: %s", dependency)
             if dependency.name in self.ignore_pkgs:
-                msg = " {}: {}".format(
-                    Tools.decorate(dependency.name), Downloader.IGNORE_TAG)
-                self.printer.add_msg(dependency.name, msg)
+                log.debug(" Skipping ignored package '%s'", dependency.name)
                 continue
             futures_list.append(self.thread_pool.submit(
                 self.__check_dependency, dependency))
         for future in futures.as_completed(futures_list):
             dependency, repo_found = future.result()
             if repo_found:
-                msg = " {}: {}".format(
-                    Tools.decorate(dependency.name), dependency.url)
+                msg = " {}: {}".format(Tools.decorate(dependency.name),
+                                       Downloader.FOUND_TAG + dependency.url)
                 self.printer.purge_msg(dependency.name, msg)
                 checked_deps[dependency.name] = dependency
             else:

@@ -7,7 +7,7 @@ from setuptools import setup
 from setuptools import find_packages
 from setuptools.command.install import install
 
-version_str = '0.2.2'
+version_str = '0.3.0'
 
 # Setup installation dependencies
 install_requires = [
@@ -74,7 +74,6 @@ catkin workspace and updating all the packages to the final state.""",
     test_suite='tests',
     entry_points={
         'catkin_tools.commands.catkin.verbs': [
-            'fetch = catkin_tools_fetch:description',
             'deps = catkin_tools_fetch:description_deps',
             'dependencies = catkin_tools_fetch:description_dependencies',
         ],

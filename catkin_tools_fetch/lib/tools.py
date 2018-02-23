@@ -82,17 +82,29 @@ class GitBridge(object):
         Returns:
             bool: True if exists, False otherwise
         """
-        if dependency.url == "":
-            return dependency, False
-        git_cmd = GitBridge.CHECK_CMD_MASK.format(url=dependency.url)
-        try:
-            subprocess.check_call(git_cmd,
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE,
-                                  shell=True)
-            return dependency, True
-        except subprocess.CalledProcessError:
-            return dependency, False
+        urls = []
+        if dependency.url:
+            urls.append(dependency.url)
+        else:
+            urls.extend(dependency.default_urls)
+        log.debug(" Checking urls: %s", urls)
+        for url in urls:
+            git_cmd = GitBridge.CHECK_CMD_MASK.format(url=url)
+            try:
+                log.debug(" Searching for package '%s' under url '%s'",
+                          dependency.name, url)
+                subprocess.check_call(git_cmd,
+                                      stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE,
+                                      shell=True)
+                # Update the working url if needed.
+                dependency.url = url
+                return dependency, True
+            except subprocess.CalledProcessError:
+                log.debug('Package "%s" was not found under: "%s"',
+                          dependency.name, url)
+        # If we reached here we failed to find the dependency.
+        return dependency, False
 
     @staticmethod
     def get_branch_name(git_status_output):
@@ -115,28 +127,67 @@ class Tools(object):
         default_ros_packages (str[]): default packages for ROS
     """
 
+    PACKAGE_TAG = '{package}'
+
     @staticmethod
-    def prepare_default_url(default_url):
+    def prepare_default_urls(default_urls):
         """Insert {package} statement into the URL.
 
         Args:
-            default_url (str): Defatul url. Can be one of the following styles:
+            default_urls (str): Default urls, single string, comma separated.
+                Each can be one of the following styles:
+                - git@<path>
+                - https://<path>
+
+        Returns:
+            set(str): Urls with {package} tag placed inside of them.
+        """
+        all_urls = default_urls.split(",")
+        prepared_urls = set()
+        for url in all_urls:
+            prepared_url = Tools.prepare_default_url(url)
+            if prepared_url:
+                prepared_urls.add(prepared_url)
+                log.debug("Prepared url: '%s'", prepared_url)
+        return prepared_urls
+
+    @staticmethod
+    def prepare_default_url(url):
+        """Insert {package} statement into the URL.
+
+        Args:
+            url (str): Default url, single string.
+                Can be one of the following styles:
                 - git@<path>
                 - https://<path>
 
         Returns:
             str: Url with {package} tag placed inside of it.
         """
-        package_tag = '{package}'
-        if len(default_url) == 0:
-            return default_url
-        if not default_url.endswith('/'):
-            default_url += '/'
-        if default_url.startswith('git'):
-            return default_url + package_tag + '.git'
-        if default_url.startswith('http'):
-            return default_url + package_tag
-        return default_url
+        if Tools.PACKAGE_TAG in url:
+            return url
+        if not url.endswith('/') and not url.endswith('.git'):
+            url += '/'
+        if url.startswith('git'):
+            if not url.endswith('.git'):
+                return url + Tools.PACKAGE_TAG + '.git'
+            if Tools.PACKAGE_TAG not in url:
+                log.error("Skipping url with no tag place:'%s'", url)
+                return None
+        if url.startswith('http'):
+            return url + Tools.PACKAGE_TAG
+
+    @staticmethod
+    def populate_urls_with_name(urls, pkg_name):
+        """Populate all urls with the package name."""
+        populated_urls = []
+        for url in urls:
+            if Tools.PACKAGE_TAG not in url:
+                log.error("Url '%s' is malformed. Should contain tag: '%s'",
+                          url, Tools.PACKAGE_TAG)
+                continue
+            populated_urls.append(url.format(package=pkg_name))
+        return populated_urls
 
     @staticmethod
     def list_all_ros_pkgs():
@@ -160,7 +211,11 @@ class Tools(object):
                 str_output = output
             output = str_output.splitlines()
             for pkg_line in output:
-                pkg_list.append(pkg_line.split(' ')[0])
+                pkg_line_list = pkg_line.split(' ')
+                pkg_name = pkg_line_list[0]
+                pkg_path = pkg_line_list[1]
+                if not pkg_path.startswith('/home/'):
+                    pkg_list.append(pkg_name)
             log.info(" [ROS]: Ignoring %s packages.", len(pkg_list))
             return set(pkg_list)
         except subprocess.CalledProcessError:

@@ -7,22 +7,34 @@ from catkin_tools_fetch.lib.dependency_parser import Dependency
 class TestTools(unittest.TestCase):
     """Test various tools that come with the project."""
 
-    def test_prepare_default_url(self):
+    def test_prepare_default_urls(self):
         """Test formatting the default dir."""
-        test_url = ''
-        self.assertEqual(test_url, Tools.prepare_default_url(test_url))
-        test_url_git = 'git@path/'
-        self.assertEqual(test_url_git + '{package}' + '.git',
-                         Tools.prepare_default_url(test_url_git))
-        test_url_git = 'git@path'
-        self.assertEqual(test_url_git + '/{package}' + '.git',
-                         Tools.prepare_default_url(test_url_git))
-        test_url_http = 'https://path/'
-        self.assertEqual(test_url_http + '{package}',
-                         Tools.prepare_default_url(test_url_http))
-        test_url_http = 'https://path'
-        self.assertEqual(test_url_http + '/{package}',
-                         Tools.prepare_default_url(test_url_http))
+        urls = [
+            "git@path",                     # 0
+            "git@path2/",                   # 1
+            "https://path",                 # 2
+            "https://path2/",               # 3
+            "git@some_path.git",            # 4
+            "git@some_path/{package}.git",  # 5
+            "{package}"                     # 6
+        ]
+        urls_joined = ','.join(urls)
+        prepared_urls = Tools.prepare_default_urls(urls_joined)
+        self.assertIn(urls[0] + '/{package}' + '.git', prepared_urls)
+        self.assertIn(urls[1] + '{package}' + '.git', prepared_urls)
+        self.assertIn(urls[2] + '/{package}', prepared_urls)
+        self.assertIn(urls[3] + '{package}', prepared_urls)
+        self.assertNotIn(urls[4], prepared_urls)
+        self.assertIn(urls[5], prepared_urls)
+        self.assertIn(urls[6], prepared_urls)
+
+    def test_populate_urls_with_name(self):
+        """Test populating urls with names."""
+        urls = ['blah{package}', '{package}', 'blah']
+        populated = Tools.populate_urls_with_name(urls=urls, pkg_name='NAME')
+        self.assertIn('blahNAME', populated)
+        self.assertIn('NAME', populated)
+        self.assertNotIn('blah', populated)
 
     def test_decorate(self):
         """Test how we decorate something."""
