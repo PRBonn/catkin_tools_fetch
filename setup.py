@@ -45,7 +45,8 @@ class PermissiveInstall(install):
                 os.chmod(file, mode)
 
 
-github_url = 'https://github.com/niosus/catkin_tools_fetch'
+github_url = \
+    'https://github.com/Photogrammetry-Robotics-Bonn/catkin_tools_fetch'
 
 setup(
     name='catkin_tools_fetch',

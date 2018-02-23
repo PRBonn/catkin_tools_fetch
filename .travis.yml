@@ -40,4 +40,4 @@ deploy:
   on:
     tags: true
     distributions: sdist bdist_wheel
-    repo: niosus/catkin_tools_fetch
+    repo: Photogrammetry-Robotics-Bonn/catkin_tools_fetch
