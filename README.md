@@ -1,5 +1,7 @@
 # "fetch" and "update" your dependencies with catkin_tools
 
+![Cool GIF](fetch_show_off.gif)
+
 [![PyPI][pypi-img]][pypi-link]
 [![Build Status][travis-img]][travis-link]
 [![Codacy Badge][codacy-img]][codacy-link]

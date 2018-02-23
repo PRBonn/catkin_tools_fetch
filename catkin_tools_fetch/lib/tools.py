@@ -82,12 +82,17 @@ class GitBridge(object):
         Returns:
             bool: True if exists, False otherwise
         """
+        from os import environ
         urls = []
         if dependency.url:
             urls.append(dependency.url)
         else:
             urls.extend(dependency.default_urls)
         log.debug(" Checking urls: %s", urls)
+        # Disable git interactive promts. Just fail silently.
+        new_env = environ
+        new_env["GIT_TERMINAL_PROMPT"] = "0"
+        # Check all urls.
         for url in urls:
             git_cmd = GitBridge.CHECK_CMD_MASK.format(url=url)
             try:
@@ -96,7 +101,8 @@ class GitBridge(object):
                 subprocess.check_call(git_cmd,
                                       stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE,
-                                      shell=True)
+                                      shell=True,
+                                      env=new_env)
                 # Update the working url if needed.
                 dependency.url = url
                 return dependency, True
