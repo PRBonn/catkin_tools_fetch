@@ -55,7 +55,7 @@ The verb `fetch` is smart enough to recognize `ssh` and `https` access, thus
 these expansions for a given `DEP_NAME` are valid:
 ```
 git@path     --> git@path/DEP_NAME.git
-https://path --> https://path/DEP_NAME.git
+https://path --> https://path/DEP_NAME
 ```
 Beware, though, that for ssh access your machine has to have proper ssh keys
 installed.
@@ -65,15 +65,19 @@ Additionaly, one can explicitly define needed urls for dependencies in
 ```xml
 <export>
     <!-- Define a url for all packages with no explicit url defined. -->
-    <git_url target="all" url="SOME_GENERAL_URL" />
+    <git_url target="all" url="https://github.com/niosus" />
+    <!-- Define ANOTHER url for all packages with no explicit url defined. -->
+    <!-- There can be arbitrarily many of these. -->
+    <git_url target="all" url="https://gitlab.com/niosus" />
     <!-- Define an explicit url for package DEP_NAME. -->
     <git_url target="DEP_NAME" url="git@some_path/DEP_NAME.git" branch="BRANCH_NAME" />
 </export>
 ```
 
 There are some options here:
-- If the `target` is set to `"all"`, then `SOME_GENERAL_URL` is treated as one
-  of the default urls to search all packages in.
+- If the `target` is set to `"all"`, then the `url` is treated as one of the
+  default urls to search all packages in. There can be any number of entries
+  with `target` set to `"all"`.
 - If the `target` package `"DEP_NAME"` matches one of the dependencies,
   this has precedence over any of the default urls and the package will be
   searched in the full path to the package defined in the `url` field.
