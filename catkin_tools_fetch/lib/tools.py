@@ -106,9 +106,10 @@ class GitBridge(object):
                 # Update the working url if needed.
                 dependency.url = url
                 return dependency, True
-            except subprocess.CalledProcessError:
-                log.debug('Package "%s" was not found under: "%s"',
-                          dependency.name, url)
+            except subprocess.CalledProcessError as e:
+                log.debug(
+                    'Package "%s" was not found under: "%s" with error: %s',
+                    dependency.name, url, e)
         # If we reached here we failed to find the dependency.
         return dependency, False
 
