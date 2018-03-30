@@ -156,7 +156,6 @@ def main(opts):
         return update(packages=opts.packages,
                       workspace=opts.workspace,
                       context=context,
-                      conflict_strategy=opts.on_conflict,
                       use_preprint=use_preprint,
                       num_threads=opts.num_threads)
 
@@ -164,7 +163,6 @@ def main(opts):
 def update(packages,
            workspace,
            context,
-           conflict_strategy,
            use_preprint,
            num_threads):
     """Update packages from the available remotes.
@@ -184,7 +182,6 @@ def update(packages,
                                        warnings=[])
     updater = Updater(ws_path=ws_path,
                       packages=workspace_packages,
-                      conflict_strategy=conflict_strategy,
                       use_preprint=use_preprint,
                       num_threads=num_threads)
     updater.update_packages(packages)
