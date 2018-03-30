@@ -7,7 +7,7 @@ from setuptools import setup
 from setuptools import find_packages
 from setuptools.command.install import install
 
-version_str = '0.3.3'
+version_str = '0.3.4'
 
 # Setup installation dependencies
 install_requires = [

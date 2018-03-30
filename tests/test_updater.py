@@ -5,7 +5,6 @@ import tempfile
 from termcolor import colored
 from mock import MagicMock, PropertyMock
 from catkin_tools_fetch.lib.update import Updater
-from catkin_tools_fetch.lib.update import Strategy
 from catkin_tools_fetch.lib.tools import GitBridge
 
 
@@ -47,19 +46,16 @@ class TestUpdater(unittest.TestCase):
         packages = {
             "test_folder": "package_dummy"
         }
-        conflict_strategy = "abort"
-        updater = Updater(ws_path, packages, conflict_strategy)
+        updater = Updater(ws_path, packages)
         self.assertEquals(ws_path, updater.ws_path)
         self.assertEquals(packages, updater.packages)
-        self.assertEquals(conflict_strategy, updater.conflict_strategy)
 
     def test_filter_packages(self):
         """Test filtering of packages."""
         ws_path = self.test_dir
         mock_list, all_packages = generate_mock_packages(3)
         selected_packages = [mock_list[0].name, mock_list[2].name]
-        conflict_strategy = "abort"
-        updater = Updater(ws_path, all_packages, conflict_strategy)
+        updater = Updater(ws_path, all_packages)
         filtered_packages = updater.filter_packages(selected_packages)
         expected_packages = {
             "folder_0": mock_list[0],
@@ -76,8 +72,7 @@ class TestUpdater(unittest.TestCase):
             "folder_3": "package_dummy_3",
         }
         selected_packages = None
-        conflict_strategy = "abort"
-        updater = Updater(ws_path, all_packages, conflict_strategy)
+        updater = Updater(ws_path, all_packages)
         filtered_packages = updater.filter_packages(selected_packages)
         self.assertEquals(all_packages, filtered_packages)
 
@@ -122,9 +117,3 @@ Already up-to-date.
         self.assertEquals(status_msgs[0][0], "pkg")
         self.assertEquals(status_msgs[0][1], colored(
             Updater.UP_TO_DATE_TAG, "green"))
-
-    def test_list_strategies(self):
-        """Test the list of all strategies."""
-        expected = set([Strategy.IGNORE, Strategy.ABORT])
-        actual = set(Strategy.list_all())
-        self.assertEquals(len(expected.symmetric_difference(actual)), 0)

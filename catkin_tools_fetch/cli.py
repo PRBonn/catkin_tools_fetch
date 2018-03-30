@@ -25,7 +25,6 @@ from catkin_tools_fetch.lib.dependency_parser import Parser
 from catkin_tools_fetch.lib.downloader import Downloader
 from catkin_tools_fetch.lib.tools import Tools
 from catkin_tools_fetch.lib.update import Updater
-from catkin_tools_fetch.lib.update import Strategy
 
 logging.basicConfig()
 log = logging.getLogger('deps')
@@ -82,14 +81,6 @@ def prepare_arguments_deps(parser):
         Update the existing repositories to their latest state from remote."""
     parser_update = subparsers.add_parser(
         'update', help=update_help_msg, parents=[parent_parser])
-    config_update_group = parser_update.add_argument_group('Config')
-    conflict_help_msg = """ When we pull a git repository there can be
-        conflicts. We need to resolve them in some way. You can pick this here.
-        By default the plugin will use '%(default)s' strategy."""
-    config_update_group.add_argument('--on-conflict', '-r',
-                                     choices=Strategy.list_all(),
-                                     default=Strategy.IGNORE,
-                                     help=conflict_help_msg)
 
     update_pkg_group = parser_update.add_argument_group(
         'Packages',
@@ -105,6 +96,10 @@ def prepare_arguments_deps(parser):
     parser_fetch = subparsers.add_parser('fetch',
                                          help=fetch_help_msg,
                                          parents=[parent_parser])
+    parser_fetch.add_argument('--update',
+                              action='store_true',
+                              default=True,
+                              help="Update after fetch.")
     fetch_group = parser_fetch.add_argument_group(
         'Packages',
         'Control for which packages we fetch dependencies.')
@@ -155,7 +150,8 @@ def main(opts):
                      context=context,
                      default_urls=default_urls,
                      use_preprint=use_preprint,
-                     num_threads=opts.num_threads)
+                     num_threads=opts.num_threads,
+                     pull_after_fetch=opts.update)
     if opts.subverb == 'update':
         return update(packages=opts.packages,
                       workspace=opts.workspace,
@@ -200,7 +196,8 @@ def fetch(packages,
           context,
           default_urls,
           use_preprint,
-          num_threads):
+          num_threads,
+          pull_after_fetch):
     """Fetch dependencies of a package.
 
     Args:
@@ -271,4 +268,10 @@ def fetch(packages,
         if error_code != 0:
             global_error_code = error_code
         log.info(" New packages available. Process their dependencies now.")
+    if pull_after_fetch:
+        updater = Updater(ws_path=ws_path,
+                          packages=workspace_packages,
+                          use_preprint=use_preprint,
+                          num_threads=num_threads)
+        updater.update_packages(packages)
     return global_error_code

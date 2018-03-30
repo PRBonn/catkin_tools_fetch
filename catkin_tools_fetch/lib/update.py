@@ -35,7 +35,6 @@ class Updater(object):
     def __init__(self,
                  ws_path,
                  packages,
-                 conflict_strategy,
                  use_preprint=True,
                  colored=True,
                  num_threads=4):
@@ -44,12 +43,10 @@ class Updater(object):
         Args:
             ws_path (str): Path to the workspace
             packages (dict(str)): Dictionary of packages to be downloaded
-            conflict_strategy (str): A strategy to handle conflicts
         """
         super(Updater, self).__init__()
         self.ws_path = ws_path
         self.packages = packages
-        self.conflict_strategy = conflict_strategy
         self.thread_pool = futures.ThreadPoolExecutor(max_workers=num_threads)
         self.printer = Printer()
         self.colored = colored
@@ -140,19 +137,3 @@ class Updater(object):
             # this is a warning
             return colored(picked_tag, 'yellow')
         return colored(picked_tag, 'red')
-
-
-class Strategy(object):
-    """An enum of stategies for update."""
-
-    IGNORE = 'ignore'
-    ABORT = 'abort'
-    # STASH = 'stash'
-
-    @classmethod
-    def list_all(cls):
-        """List all strategies."""
-        all_strategies = [val for key, val in cls.__dict__.items()
-                          if not callable(getattr(cls, key))
-                          and not key.startswith("__")]
-        return all_strategies
