@@ -99,7 +99,7 @@ You can always use `--help` flag to find out more about each command and argumen
 [codacy-coverage-img]: https://img.shields.io/codacy/coverage/9c050cd8852046ae863c940b8409f9ea.svg?style=flat-square
 [codacy-link]: https://www.codacy.com/app/zabugr/catkin_tools_fetch?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=niosus/catkin_tools_fetch&amp;utm_campaign=Badge_Grade
 [codacy-coverage-link]: https://www.codacy.com/app/zabugr/catkin_tools_fetch?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=niosus/catkin_tools_fetch&amp;utm_campaign=Badge_Coverage
-[travis-img]: https://img.shields.io/travis/Photogrammetry-Robotics-Bonn/catkin_tools_fetch/master.svg?style=flat-square
+[travis-img]: https://img.shields.io/travis/PRBonn/catkin_tools_fetch/master.svg?style=flat-square
 [travis-link]: https://travis-ci.org/PRBonn/catkin_tools_fetch
 
 [pypi-img]: https://img.shields.io/pypi/v/catkin_tools_fetch.svg?style=flat-square
