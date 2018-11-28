@@ -3,6 +3,7 @@
 ![Cool GIF](fetch_show_off.gif)
 
 [![PyPI][pypi-img]][pypi-link]
+[![PyPI Monthly Downloads][pypi-downloads-img]][pypi-link]
 [![Build Status][travis-img]][travis-link]
 [![Codacy Badge][codacy-img]][codacy-link]
 [![Codacy coverage][codacy-coverage-img]][codacy-coverage-link]
@@ -95,13 +96,14 @@ knows its git remote.
 ## Misc ##
 You can always use `--help` flag to find out more about each command and arguments.
 
-[codacy-img]: https://img.shields.io/codacy/grade/9c050cd8852046ae863c940b8409f9ea.svg?style=flat-square
-[codacy-coverage-img]: https://img.shields.io/codacy/coverage/9c050cd8852046ae863c940b8409f9ea.svg?style=flat-square
+[pypi-img]: https://img.shields.io/pypi/v/catkin_tools_fetch.svg?style=for-the-badge
+[pypi-downloads-img]: https://img.shields.io/pypi/dm/catkin-tools-fetch.svg?style=for-the-badge
+[codacy-img]: https://img.shields.io/codacy/grade/9c050cd8852046ae863c940b8409f9ea.svg?style=for-the-badge
+[codacy-coverage-img]: https://img.shields.io/codacy/coverage/9c050cd8852046ae863c940b8409f9ea.svg?style=for-the-badge
+
 [codacy-link]: https://www.codacy.com/app/zabugr/catkin_tools_fetch?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=niosus/catkin_tools_fetch&amp;utm_campaign=Badge_Grade
 [codacy-coverage-link]: https://www.codacy.com/app/zabugr/catkin_tools_fetch?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=niosus/catkin_tools_fetch&amp;utm_campaign=Badge_Coverage
-[travis-img]: https://img.shields.io/travis/PRBonn/catkin_tools_fetch/master.svg?style=flat-square
+[travis-img]: https://img.shields.io/travis/PRBonn/catkin_tools_fetch/master.svg?style=for-the-badge
 [travis-link]: https://travis-ci.org/PRBonn/catkin_tools_fetch
-
-[pypi-img]: https://img.shields.io/pypi/v/catkin_tools_fetch.svg?style=flat-square
 [pypi-link]: https://pypi.python.org/pypi/catkin_tools_fetch
 

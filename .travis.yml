@@ -7,20 +7,20 @@ matrix:
     os: linux
     env: PYTHON=/usr/bin/python2.7
   - dist: precise
-    python: '3.4'
+    python: '3.6'
     language: python
     os: linux
-    env: PYTHON=/usr/bin/python3.4
+    env: PYTHON=/usr/bin/python3.6
   - dist: trusty
     python: '2.7'
     language: python
     os: linux
     env: PYTHON=/usr/bin/python2.7
   - dist: trusty
-    python: '3.4'
+    python: '3.6'
     language: python
     os: linux
-    env: PYTHON=/usr/bin/python3.4
+    env: PYTHON=/usr/bin/python3.6
 before_install:
 - pip install setuptools argparse catkin-pkg catkin_tools trollius
 - pip install flake8 coverage codacy-coverage
@@ -40,4 +40,4 @@ deploy:
   on:
     tags: true
     distributions: sdist bdist_wheel
-    repo: Photogrammetry-Robotics-Bonn/catkin_tools_fetch
+    repo: PRBonn/catkin_tools_fetch

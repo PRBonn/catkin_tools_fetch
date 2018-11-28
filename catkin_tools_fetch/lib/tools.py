@@ -21,7 +21,7 @@ class GitBridge(object):
     CHECK_CMD_MASK = "git ls-remote {url}"
     CLONE_CMD_MASK = "git clone --recursive --branch {branch} {url} {path}"
 
-    BRANCH_REGEX = re.compile("## (?!HEAD)([\w\-_]+)")
+    BRANCH_REGEX = re.compile(r"## (?!HEAD)([\w\-_]+)")
 
     EXISTS_TAG = colored("[ALREADY EXISTS]", "green")
     CLONED_TAG = colored("[CLONED]", "green") + " [BRANCH: '{branch}']"
