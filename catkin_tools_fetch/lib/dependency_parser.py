@@ -148,8 +148,12 @@ class Parser(object):
             urls_node = xmldoc.getElementsByTagName(url_tag)
             for item in urls_node:
                 target = Parser.__get_attr('target', item)
+
                 if not target:
                     log.warning(" skip xml item: '%s'", item)
+                    continue
+                if target not in dep_dict:
+                    log.warning(" target is not a dependency: '%s'", target)
                     continue
                 log.debug(" read target:'%s'", target)
                 url = Parser.__get_attr('url', item)
